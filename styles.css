@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  background-image: url('icon.png');
 }
 header {
   margin: 5px;
