@@ -1,1 +1,14 @@
-
+body {
+  margin: 0;
+}
+header {
+  height: 40px;
+  box-shadow: 17px 20px 29px 7px rgba(0,0,0,0.61);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.headline {
+  color: yellow;
+  font-size: 20px;
+}
