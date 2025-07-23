@@ -7,15 +7,10 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backround-color: orange;
-}
-.headline {
-  color: yellow;
-  font-size: 20px;
 }
 a {
   text-decoration: none;
-  text-size: 35px;
+  text-size: 45px;
   color: red;
 }
 .centerd {
