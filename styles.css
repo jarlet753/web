@@ -13,7 +13,7 @@ header {
   color: yellow;
   font-size: 20px;
 }
-.headline a {
+a {
   text-decoration: none;
   text-size: 35px;
   color: red;
