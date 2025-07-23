@@ -2,6 +2,7 @@ body {
   margin: 0;
 }
 header {
+  margin: 5px;
   height: 40px;
   box-shadow: 17px 20px 29px 7px rgba(0,0,0,0.61);
   display: flex;
@@ -17,6 +18,8 @@ a {
   text-align: center;
 }
 p {
+  margin: 5px;
   font-size: 30px;
   text-align: center;
+  color:coral;
 }
