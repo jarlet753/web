@@ -13,6 +13,11 @@ header {
   color: yellow;
   font-size: 20px;
 }
+.headline a {
+  text-decoration: none;
+  text-size: 35px;
+  color: red;
+}
 .centerd {
   text-align: center;
 }
