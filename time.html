@@ -2,25 +2,60 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Live Zeitanzeige</title>
+<title>Geiles Zeit & Info Dashboard</title>
 <style>
   body {
-    background: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    text-align: center;
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
   }
+  h1 {
+    color: #58a6ff;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #58a6ff;
+  }
+  .container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+  }
+  .card {
+    background: #161b22;
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1 1 300px;
+    min-width: 280px;
+    box-shadow: 0 0 20px rgba(88,166,255,0.2);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 1s forwards;
+  }
+  .card:nth-child(1) { animation-delay: 0.2s; }
+  .card:nth-child(2) { animation-delay: 0.4s; }
+  .card:nth-child(3) { animation-delay: 0.6s; }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   canvas {
     display: block;
-    margin: 20px auto;
-    background: #222;
+    margin: 0 auto;
+    background: #111;
     border-radius: 10px;
   }
-  #zeitText {
-    margin-top: 20px;
-    font-size: 1.2em;
-    line-height: 1.6em;
-  }
+  .label { color: #8b949e; }
+  .value { color: #58a6ff; font-weight: bold; }
   .red { color: #ff4444; }
   .green { color: #44ff44; }
   .blue { color: #4488ff; }
@@ -28,15 +63,47 @@
 </style>
 </head>
 <body>
-<h1>Live Zeitanzeige</h1>
-<canvas id="clockCanvas" width="400" height="400"></canvas>
-<div id="zeitText"></div>
+<h1>⚡ Zeit & System Dashboard ⚡</h1>
+
+<div class="container">
+  <!-- Zeit-Panel -->
+  <div class="card">
+    <h2>🕒 Zeit</h2>
+    <canvas id="clockCanvas" width="300" height="300"></canvas>
+    <div id="zeitText"></div>
+  </div>
+
+  <!-- System-Infos -->
+  <div class="card">
+    <h2>💻 Dein Gerät</h2>
+    <div><span class="label">Betriebssystem:</span> <span id="os" class="value"></span></div>
+    <div><span class="label">Browser:</span> <span id="browser" class="value"></span></div>
+    <div><span class="label">Sprache:</span> <span id="language" class="value"></span></div>
+    <div><span class="label">Bildschirm:</span> <span id="screen" class="value"></span></div>
+    <div><span class="label">Pixel Ratio:</span> <span id="dpr" class="value"></span></div>
+    <div><span class="label">Farbentiefe:</span> <span id="depth" class="value"></span></div>
+    <div><span class="label">Zeitzone:</span> <span id="timezone" class="value"></span></div>
+    <div><span class="label">Seitenzeit:</span> <span id="pageTime" class="value"></span></div>
+    <div><span class="label">Öffentliche IP:</span> <span id="ip" class="value"></span></div>
+  </div>
+
+  <!-- Extra Infos -->
+  <div class="card">
+    <h2>📊 Extra Infos</h2>
+    <div><span class="label">Online Status:</span> <span id="online" class="value"></span></div>
+    <div><span class="label">Cookies aktiviert:</span> <span id="cookies" class="value"></span></div>
+    <div><span class="label">JavaScript aktiv:</span> <span class="value">✅</span></div>
+    <div><span class="label">Referrer:</span> <span id="referrer" class="value"></span></div>
+    <div><span class="label">User-Agent:</span> <span id="ua" class="value"></span></div>
+  </div>
+</div>
 
 <script>
+/* === Zeit / Canvas === */
 const canvas = document.getElementById('clockCanvas');
 const ctx = canvas.getContext('2d');
 const radius = canvas.width / 2;
-ctx.translate(radius, radius); // Zentrum setzen
+ctx.translate(radius, radius);
 
 function drawClock() {
     const now = new Date();
@@ -46,31 +113,24 @@ function drawClock() {
     const min = now.getMinutes();
     const hour = now.getHours();
 
-    // Hintergrund löschen
     ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
 
-    // Stundenkreis
-    drawCircle(hour / 24, 150, 'rgba(255, 68, 68, 0.7)', 15);
-    // Minutenkreis
-    drawCircle(min / 60, 120, 'rgba(68, 255, 68, 0.7)', 15);
-    // Millisekundenkreis
-    drawCircle(ms / 1000, 90, 'rgba(255, 255, 68, 0.7)', 10);
+    drawCircle(hour / 24, 120, 'rgba(255, 68, 68, 0.7)', 12);   // Stunden
+    drawCircle(min / 60, 90, 'rgba(68, 255, 68, 0.7)', 12);     // Minuten
+    drawCircle(ms / 1000, 60, 'rgba(255, 255, 68, 0.7)', 8);    // Millisekunden
 
-    // Sekunden-Kreis als gefüllter Punkt (blinkt im Sekundentakt)
-    if (ms < 500) { // 500ms an, 500ms aus
+    if (ms < 500) { // Sekunden Blinker
         ctx.beginPath();
-        ctx.arc(0, 0, 40, 0, 2 * Math.PI);
+        ctx.arc(0, 0, 30, 0, 2 * Math.PI);
         ctx.fillStyle = 'rgba(68, 136, 255, 0.9)';
         ctx.fill();
     }
 
-    // Textanzeige mit Farben
     document.getElementById('zeitText').innerHTML =
         `<span class="yellow">Millisekunden: ${millis}</span><br>` +
         `<span class="blue">Sekunden: ${sec}</span><br>` +
         `<span class="green">Minuten: ${min}</span><br>` +
-        `<span class="red">Stunden: ${hour}</span><br>` +
-        `Tag: ${now.getDate()}, Monat: ${now.getMonth() + 1}, Jahr: ${now.getFullYear()}`;
+        `<span class="red">Stunden: ${hour}</span>`;
 }
 
 function drawCircle(fraction, r, color, width) {
@@ -83,7 +143,44 @@ function drawCircle(fraction, r, color, width) {
     ctx.stroke();
 }
 
-setInterval(drawClock, 20); // ~50 FPS
+setInterval(drawClock, 20);
+
+/* === System-Infos === */
+document.getElementById("os").textContent = navigator.platform || "Unbekannt";
+document.getElementById("browser").textContent = navigator.userAgent.split(") ").pop();
+document.getElementById("language").textContent = navigator.language;
+document.getElementById("screen").textContent = `${screen.width}x${screen.height}`;
+document.getElementById("dpr").textContent = window.devicePixelRatio;
+document.getElementById("depth").textContent = screen.colorDepth + " bit";
+document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById("referrer").textContent = document.referrer || "Direkt";
+document.getElementById("ua").textContent = navigator.userAgent;
+
+/* Online-Status */
+function updateOnline() {
+  document.getElementById("online").textContent = navigator.onLine ? "✅ Online" : "❌ Offline";
+}
+updateOnline();
+window.addEventListener("online", updateOnline);
+window.addEventListener("offline", updateOnline);
+
+/* Cookies */
+document.getElementById("cookies").textContent = navigator.cookieEnabled ? "✅ Ja" : "❌ Nein";
+
+/* Seitenzeit */
+let startTime = Date.now();
+setInterval(() => {
+    let diff = Math.floor((Date.now() - startTime) / 1000);
+    let min = Math.floor(diff / 60);
+    let sec = diff % 60;
+    document.getElementById("pageTime").textContent = `${min}m ${sec}s`;
+}, 1000);
+
+/* Öffentliche IP */
+fetch("https://api.ipify.org?format=json")
+  .then(res => res.json())
+  .then(data => { document.getElementById("ip").textContent = data.ip; })
+  .catch(() => { document.getElementById("ip").textContent = "Nicht verfügbar"; });
 </script>
 </body>
 </html>
