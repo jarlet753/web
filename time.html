@@ -46,7 +46,7 @@
 <h1>System- und Zeitinformationen</h1>
 
 <div class="info"><span class="label">Aktuelle Zeit:</span> <span id="time" class="value"></span></div>
-<div class="info"><span class="label">Seitenseitendauer:</span> <span id="pageTime" class="value"></span></div>
+<div class="info"><span class="label">Seitendauer:</span> <span id="pageTime" class="value"></span></div>
 <div class="info"><span class="label">Zeitzone:</span> <span id="timezone" class="value"></span></div>
 
 <div class="info"><span class="label">Betriebssystem:</span> <span id="os" class="value"></span></div>
@@ -68,6 +68,11 @@
 <div class="info"><span class="label">Cookies aktiviert:</span> <span id="cookies" class="value"></span></div>
 <div class="info"><span class="label">JavaScript:</span> <span class="value">Aktiv</span></div>
 <div class="info"><span class="label">Referrer:</span> <span id="referrer" class="value"></span></div>
+
+<div class="info"><span class="label">Netzwerktyp:</span> <span id="netType" class="value"></span></div>
+<div class="info"><span class="label">Geschätzte Bandbreite:</span> <span id="downlink" class="value"></span></div>
+<div class="info"><span class="label">Geschätzte RTT:</span> <span id="rtt" class="value"></span></div>
+<div class="info"><span class="label">Pseudo-Ping:</span> <span id="ping" class="value"></span></div>
 
 <div class="info"><span class="label">Öffentliche IP:</span> <span id="ip" class="value"></span></div>
 
@@ -125,6 +130,43 @@ document.getElementById("cookies").textContent = navigator.cookieEnabled ? "Ja" 
 
 // Referrer
 document.getElementById("referrer").textContent = document.referrer || "Direkt";
+
+// Netzwerk Infos (falls verfügbar)
+if (navigator.connection) {
+  document.getElementById("netType").textContent = navigator.connection.effectiveType || "Unbekannt";
+  document.getElementById("downlink").textContent = navigator.connection.downlink ? navigator.connection.downlink + " Mbps" : "Unbekannt";
+  document.getElementById("rtt").textContent = navigator.connection.rtt ? navigator.connection.rtt + " ms" : "Unbekannt";
+} else {
+  document.getElementById("netType").textContent = "Nicht unterstützt";
+  document.getElementById("downlink").textContent = "Nicht unterstützt";
+  document.getElementById("rtt").textContent = "Nicht unterstützt";
+}
+
+// Pseudo-Ping Funktion
+async function pseudoPing(url) {
+  try {
+    let start = performance.now();
+    await fetch(url, {cache: "no-store", mode: "no-cors"});
+    let end = performance.now();
+    document.getElementById("ping").textContent = (end - start).toFixed(2) + " ms";
+  } catch (e) {
+    document.getElementById("ping").textContent = "Fehler";
+  }
+}
+
+// Mehrfach messen und Mittelwert nehmen
+async function measurePing() {
+  let times = [];
+  for (let i = 0; i < 3; i++) {
+    let start = performance.now();
+    await fetch("https://www.google.com", {cache: "no-store"});
+    let end = performance.now();
+    times.push(end - start);
+  }
+  let avg = times.reduce((a,b) => a+b, 0) / times.length;
+  document.getElementById("ping").textContent = avg.toFixed(2) + " ms";
+}
+measurePing();
 
 // IP-Adresse
 fetch("https://api.ipify.org?format=json")
