@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Deine Geräte-Infos</title>
+<style>
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+    padding: 20px;
+    line-height: 1.6em;
+  }
+  h1 {
+    color: #58a6ff;
+  }
+  .info-box {
+    background: #161b22;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 0 10px rgba(88,166,255,0.2);
+  }
+  .label {
+    color: #8b949e;
+  }
+  .value {
+    color: #58a6ff;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h1>🔍 Deine Systeminformationen</h1>
+
+<div class="info-box">
+  <div><span class="label">Betriebssystem:</span> <span id="os" class="value"></span></div>
+  <div><span class="label">Browser:</span> <span id="browser" class="value"></span></div>
+  <div><span class="label">Sprache:</span> <span id="language" class="value"></span></div>
+  <div><span class="label">Bildschirm:</span> <span id="screen" class="value"></span></div>
+  <div><span class="label">Geräte Pixel Ratio:</span> <span id="dpr" class="value"></span></div>
+  <div><span class="label">Farbentiefe:</span> <span id="depth" class="value"></span></div>
+  <div><span class="label">Zeitzone:</span> <span id="timezone" class="value"></span></div>
+  <div><span class="label">Seitenzeit:</span> <span id="pageTime" class="value"></span></div>
+  <div><span class="label">Deine öffentliche IP:</span> <span id="ip" class="value"></span></div>
+</div>
+
+<script>
+// Browser & System Infos
+document.getElementById("os").textContent = navigator.platform || "Unbekannt";
+document.getElementById("browser").textContent = navigator.userAgent;
+document.getElementById("language").textContent = navigator.language;
+document.getElementById("screen").textContent = `${screen.width}x${screen.height}`;
+document.getElementById("dpr").textContent = window.devicePixelRatio;
+document.getElementById("depth").textContent = screen.colorDepth + " bit";
+document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+// Zeit auf der Seite (wird jede Sekunde aktualisiert)
+let startTime = Date.now();
+setInterval(() => {
+    let diff = Math.floor((Date.now() - startTime) / 1000);
+    let min = Math.floor(diff / 60);
+    let sec = diff % 60;
+    document.getElementById("pageTime").textContent = `${min}m ${sec}s`;
+}, 1000);
+
+// Öffentliche IP via API laden
+fetch("https://api.ipify.org?format=json")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("ip").textContent = data.ip;
+  })
+  .catch(() => {
+    document.getElementById("ip").textContent = "Nicht verfügbar";
+  });
+</script>
+</body>
+</html>
