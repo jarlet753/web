@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Live Zeitanzeige</title>
+<style>
+  body {
+    background: #111;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  canvas {
+    display: block;
+    margin: 20px auto;
+    background: #222;
+    border-radius: 10px;
+  }
+  #zeitText {
+    margin-top: 20px;
+    font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+<h1>Live Zeitanzeige</h1>
+<canvas id="clockCanvas" width="400" height="400"></canvas>
+<div id="zeitText"></div>
+
+<script>
+const canvas = document.getElementById('clockCanvas');
+const ctx = canvas.getContext('2d');
+const radius = canvas.width / 2;
+ctx.translate(radius, radius); // Zentrum des Canvas
+
+function drawClock() {
+    const now = new Date();
+    const millis = now.getTime();
+    const sec = now.getSeconds() + now.getMilliseconds() / 1000;
+    const min = now.getMinutes() + sec / 60;
+    const hour = now.getHours() + min / 60;
+    const day = now.getDate();
+    const month = now.getMonth() + 1; // 1-12
+    const year = now.getFullYear();
+
+    // Kreise
+    ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
+
+    drawCircle(hour / 24, 150, 'rgba(255, 0, 0, 0.5)'); // Stundenkreis
+    drawCircle(min / 60, 120, 'rgba(0, 255, 0, 0.5)');  // Minutenkreis
+    drawCircle(sec / 60, 90, 'rgba(0, 0, 255, 0.5)');   // Sekundenkreis
+    drawCircle((millis % 1000) / 1000, 60, 'rgba(255, 255, 0, 0.5)'); // Millisekundenkreis
+
+    // Textanzeige
+    document.getElementById('zeitText').innerHTML =
+        `Millisekunden: ${millis}<br>` +
+        `Sekunden: ${sec.toFixed(3)}<br>` +
+        `Minuten: ${min.toFixed(3)}<br>` +
+        `Stunden: ${hour.toFixed(3)}<br>` +
+        `Tag: ${day}, Monat: ${month}, Jahr: ${year}`;
+}
+
+function drawCircle(fraction, r, color) {
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + fraction * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, startAngle, endAngle);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 15;
+    ctx.stroke();
+}
+
+setInterval(drawClock, 20); // 50 FPS
+</script>
+</body>
+</html>
