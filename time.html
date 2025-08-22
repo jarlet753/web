@@ -19,7 +19,12 @@
   #zeitText {
     margin-top: 20px;
     font-size: 1.2em;
+    line-height: 1.6em;
   }
+  .red { color: #ff4444; }
+  .green { color: #44ff44; }
+  .blue { color: #4488ff; }
+  .yellow { color: #ffff44; }
 </style>
 </head>
 <body>
@@ -31,46 +36,54 @@
 const canvas = document.getElementById('clockCanvas');
 const ctx = canvas.getContext('2d');
 const radius = canvas.width / 2;
-ctx.translate(radius, radius); // Zentrum des Canvas
+ctx.translate(radius, radius); // Zentrum setzen
 
 function drawClock() {
     const now = new Date();
     const millis = now.getTime();
-    const sec = now.getSeconds() + now.getMilliseconds() / 1000;
-    const min = now.getMinutes() + sec / 60;
-    const hour = now.getHours() + min / 60;
-    const day = now.getDate();
-    const month = now.getMonth() + 1; // 1-12
-    const year = now.getFullYear();
+    const ms = now.getMilliseconds();
+    const sec = now.getSeconds();
+    const min = now.getMinutes();
+    const hour = now.getHours();
 
-    // Kreise
+    // Hintergrund löschen
     ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
 
-    drawCircle(hour / 24, 150, 'rgba(255, 0, 0, 0.5)'); // Stundenkreis
-    drawCircle(min / 60, 120, 'rgba(0, 255, 0, 0.5)');  // Minutenkreis
-    drawCircle(sec / 60, 90, 'rgba(0, 0, 255, 0.5)');   // Sekundenkreis
-    drawCircle((millis % 1000) / 1000, 60, 'rgba(255, 255, 0, 0.5)'); // Millisekundenkreis
+    // Stundenkreis
+    drawCircle(hour / 24, 150, 'rgba(255, 68, 68, 0.7)', 15);
+    // Minutenkreis
+    drawCircle(min / 60, 120, 'rgba(68, 255, 68, 0.7)', 15);
+    // Millisekundenkreis
+    drawCircle(ms / 1000, 90, 'rgba(255, 255, 68, 0.7)', 10);
 
-    // Textanzeige
+    // Sekunden-Kreis als gefüllter Punkt (blinkt im Sekundentakt)
+    if (ms < 500) { // 500ms an, 500ms aus
+        ctx.beginPath();
+        ctx.arc(0, 0, 40, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(68, 136, 255, 0.9)';
+        ctx.fill();
+    }
+
+    // Textanzeige mit Farben
     document.getElementById('zeitText').innerHTML =
-        `Millisekunden: ${millis}<br>` +
-        `Sekunden: ${sec.toFixed(3)}<br>` +
-        `Minuten: ${min.toFixed(3)}<br>` +
-        `Stunden: ${hour.toFixed(3)}<br>` +
-        `Tag: ${day}, Monat: ${month}, Jahr: ${year}`;
+        `<span class="yellow">Millisekunden: ${millis}</span><br>` +
+        `<span class="blue">Sekunden: ${sec}</span><br>` +
+        `<span class="green">Minuten: ${min}</span><br>` +
+        `<span class="red">Stunden: ${hour}</span><br>` +
+        `Tag: ${now.getDate()}, Monat: ${now.getMonth() + 1}, Jahr: ${now.getFullYear()}`;
 }
 
-function drawCircle(fraction, r, color) {
+function drawCircle(fraction, r, color, width) {
     const startAngle = -Math.PI / 2;
     const endAngle = startAngle + fraction * 2 * Math.PI;
     ctx.beginPath();
     ctx.arc(0, 0, r, startAngle, endAngle);
     ctx.strokeStyle = color;
-    ctx.lineWidth = 15;
+    ctx.lineWidth = width;
     ctx.stroke();
 }
 
-setInterval(drawClock, 20); // 50 FPS
+setInterval(drawClock, 20); // ~50 FPS
 </script>
 </body>
 </html>
