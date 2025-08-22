@@ -3,356 +3,481 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>System & Netzwerk Dashboard</title>
+<title>System & Netzwerk Dashboard — Vollversion</title>
 <style>
   :root{
-    --bg:#0b0f14; --panel:#121821; --panel2:#0f1520; --text:#e6edf3; --muted:#8b949e;
+    --bg:#0b0f14; --panel:#121821; --panel-2:#0f1520; --text:#e6edf3; --muted:#8b949e;
     --brand:#4ea1ff; --ok:#3fb950; --warn:#f0883e; --err:#f85149;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 "Inter",ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(13,17,23,.9),rgba(13,17,23,.4) 70%,rgba(13,17,23,0));backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid #1f2733}
-  .wrap{max-width:1100px;margin:0 auto;padding:14px 20px}
-  h1{margin:4px 0 2px;font-size:22px;color:var(--brand);letter-spacing:.2px}
-  .timebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
-  .pill{padding:8px 10px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
-  .pill .k{color:var(--muted);font-size:12px}
-  .pill .v{font-weight:700;font-size:18px}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 "Inter",ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(180deg,rgba(13,17,23,.95),rgba(13,17,23,.6) 60%,rgba(13,17,23,0));
+    backdrop-filter:saturate(130%) blur(6px);
+    border-bottom:1px solid #1f2733;
+  }
+  .wrap{max-width:1150px;margin:0 auto;padding:12px 16px}
+  h1{margin:6px 0 2px;font-size:18px;color:var(--brand);letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:12px}
+
+  /* header time pills */
+  .timebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .pill{padding:7px 10px;border-radius:10px;background:#0e1420;border:1px solid #1f2733;min-width:110px}
+  .pill .label{color:var(--muted);font-size:11px}
+  .pill .value{font-weight:700;font-size:14px;margin-top:4px;color:#ff7b72}
   .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
 
-  main{max-width:1100px;margin:12px auto 64px;padding:0 20px;display:grid;gap:18px}
+  main{max-width:1150px;margin:12px auto 64px;padding:0 16px;display:grid;gap:18px}
   section{background:var(--panel);border:1px solid #1f2733;border-radius:12px;overflow:hidden}
-  section>h2{margin:0;padding:12px 16px;border-bottom:1px solid #1f2733;background:var(--panel2);font-size:15px;color:#c9d1d9}
-  .grid{display:grid;gap:10px;padding:14px 16px}
-  .row{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border-radius:8px;background:#0e1420}
-  .row .k{min-width:220px;color:var(--muted)}
-  .row .v{font-weight:600;color:var(--brand);word-break:break-word}
-  .viz, .row, .controls{opacity:0;transform:translateY(14px);transition:opacity .45s ease, transform .45s ease}
+  section>h2{margin:0;padding:12px 14px;border-bottom:1px solid #1f2733;background:var(--panel-2);font-size:14px;color:#c9d1d9}
+  .grid{display:grid;gap:10px;padding:12px 14px}
+  .kv{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:8px;background:#0e1420}
+  .kv .k{min-width:220px;color:var(--muted);font-size:13px}
+  .kv .v{font-weight:600;color:var(--brand);word-break:break-word;font-size:13px}
+  .kv.small .k{min-width:150px}
+  .viz, .kv, .controls{opacity:0;transform:translateY(14px);transition:opacity .45s ease, transform .45s ease}
   .visible{opacity:1;transform:none}
-  @media (max-width:700px){.row .k{min-width:140px}}
 
-  /* CPU-Visualisierung */
-  .viz{padding:12px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
-  .cpu-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(22px,1fr));gap:8px;margin-top:8px}
-  .core{height:22px;border-radius:6px;background:#273244;box-shadow:inset 0 0 0 1px #2b394f}
-  .core.active{background:linear-gradient(180deg,#4ea1ff,#2e74ff);box-shadow:0 0 10px rgba(78,161,255,.55)}
+  /* cpu visualization */
+  .cpu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(18px,1fr));gap:6px;margin-top:8px}
+  .core{height:18px;border-radius:4px;background:#273244;box-shadow:inset 0 0 0 1px #2b394f;transition:background .35s, box-shadow .35s}
+  .core.active{background:linear-gradient(180deg,#4ea1ff,#2e74ff);box-shadow:0 0 8px rgba(78,161,255,.55)}
 
-  /* Ping */
-  .bar{height:10px;background:#273244;border-radius:6px;overflow:hidden;position:relative}
+  /* ping bar */
+  .bar{height:10px;background:#273244;border-radius:6px;overflow:hidden;position:relative;margin-top:8px}
   .fill{height:100%;width:0;background:var(--ok);transition:width .4s ease, background .3s ease}
-  .flash{position:absolute;inset:0;background:rgba(255,255,255,.22);opacity:0}
-  .flash.animate{animation:flash .55s}
-  @keyframes flash{0%{opacity:.8}100%{opacity:0}}
+  .ping-meta{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .ping-refresh-indicator{width:10px;height:10px;border-radius:50%;background:#ffffff10;box-shadow:inset 0 0 6px #0008;transition:box-shadow .25s}
+  .ping-refresh-indicator.active{box-shadow:0 0 10px rgba(78,161,255,.6);background:transparent}
 
-  /* Buttons */
-  .controls{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0}
-  button{background:#1a2230;color:var(--text);border:1px solid #2a3648;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+  /* controls/buttons */
+  .controls{display:flex;flex-wrap:wrap;gap:8px}
+  button{background:#1a2230;color:var(--text);border:1px solid #2a3648;border-radius:8px;padding:8px 10px;font-weight:600;cursor:pointer}
   button:hover{border-color:#3a4d6a}
 
-  /* 3D Ausrichtung – Würfel */
-  .cube-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  /* cube */
+  .cube-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .cube-container{width:110px;height:110px;perspective:700px}
   .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;transform:rotateX(0deg) rotateY(0deg);transition:transform .18s linear}
-  .cube .face{position:absolute;width:110px;height:110px;background:rgba(78,161,255,.7);border:2px solid #58a6ff}
-  .front{transform:rotateY(0deg) translateZ(55px)}
-  .back{transform:rotateY(180deg) translateZ(55px)}
-  .left{transform:rotateY(-90deg) translateZ(55px)}
-  .right{transform:rotateY(90deg) translateZ(55px)}
-  .top{transform:rotateX(90deg) translateZ(55px)}
-  .bottom{transform:rotateX(-90deg) translateZ(55px)}
+  .cube .face{position:absolute;width:110px;height:110px;border:2px solid rgba(0,0,0,.2)}
+  .front{transform:rotateY(0deg) translateZ(55px);background:#58a6ff}
+  .back{transform:rotateY(180deg) translateZ(55px);background:#f85149}
+  .left{transform:rotateY(-90deg) translateZ(55px);background:#d29922}
+  .right{transform:rotateY(90deg) translateZ(55px);background:#3fb950}
+  .top{transform:rotateX(90deg) translateZ(55px);background:#a371f7}
+  .bottom{transform:rotateX(-90deg) translateZ(55px);background:#ff7b72}
+
+  /* responsive tweaks */
+  @media (max-width:900px){ .kv .k{min-width:150px} .cpu-grid{gap:5px} .cube-container{width:90px;height:90px} .cube .face{width:90px;height:90px} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <h1>System & Netzwerk Dashboard</h1>
-    <div class="timebar">
-      <div class="pill"><div class="k">Zeit</div><div id="t_local" class="v mono">--:--:--</div></div>
-      <div class="pill"><div class="k">Unix (ms)</div><div id="t_ms" class="v mono">-</div></div>
-      <div class="pill"><div class="k">Uptime</div><div id="t_up" class="v mono">0m 00s</div></div>
-      <div class="pill"><div class="k">Zeitzone</div><div id="tz" class="v mono">-</div></div>
-    </div>
-  </div>
-</header>
-
-<main>
-  <!-- System -->
-  <section>
-    <h2>System</h2>
-    <div class="grid">
-      <div class="row"><div class="k">Plattform</div><div id="os" class="v mono"></div></div>
-      <div class="row"><div class="k">Browser</div><div id="browser" class="v mono"></div></div>
-      <div class="row"><div class="k">User-Agent</div><div id="ua" class="v mono"></div></div>
-      <div class="row"><div class="k">Sprache</div><div id="lang" class="v mono"></div></div>
-      <div class="row"><div class="k">Cookies</div><div id="cookies" class="v mono"></div></div>
-      <div class="row"><div class="k">Service Worker</div><div id="sw" class="v mono"></div></div>
-      <div class="row"><div class="k">WebGL</div><div id="webgl" class="v mono"></div></div>
-
-      <div class="viz">
-        <div class="k">CPU-Kerne</div>
-        <div class="v mono" id="cores"></div>
-        <div class="cpu-grid" id="cpuGrid"></div>
+  <header>
+    <div class="wrap">
+      <h1>System & Netzwerk Dashboard</h1>
+      <div class="sub mono">Live Diagnose — lokal im Browser</div>
+      <div class="timebar" style="margin-top:10px">
+        <div class="pill"><div class="label">Lokale Zeit</div><div id="t_local" class="value mono">--:--:--.---</div></div>
+        <div class="pill"><div class="label">Unix (ms)</div><div id="t_ms" class="value mono">-</div></div>
+        <div class="pill"><div class="label">Uptime (Seite)</div><div id="t_up" class="value mono">0m 00s</div></div>
+        <div class="pill"><div class="label">Zeitzone</div><div id="tz" class="value mono">-</div></div>
       </div>
-
-      <div class="row"><div class="k">RAM</div><div id="ram" class="v mono"></div></div>
-      <div class="row"><div class="k">Storage</div><div id="storage" class="v mono"></div></div>
-      <div class="row"><div class="k">Battery</div><div id="battery" class="v mono"></div></div>
     </div>
-  </section>
+  </header>
 
-  <!-- Display -->
-  <section>
-    <h2>Display</h2>
-    <div class="grid">
-      <div class="row"><div class="k">Bildschirm</div><div id="screen" class="v mono"></div></div>
-      <div class="row"><div class="k">Viewport</div><div id="viewport" class="v mono"></div></div>
-      <div class="row"><div class="k">Pixel Ratio</div><div id="dpr" class="v mono"></div></div>
-      <div class="row"><div class="k">Farbtiefe</div><div id="depth" class="v mono"></div></div>
-      <div class="viz">
-        <div class="cube-wrap">
+  <main>
+    <!-- SYSTEM -->
+    <section id="sec-system">
+      <h2>System</h2>
+      <div class="grid">
+        <div class="kv"><div class="k">Plattform</div><div id="os" class="v mono"></div></div>
+        <div class="kv"><div class="k">Browser</div><div id="browser" class="v mono"></div></div>
+        <div class="kv"><div class="k">User-Agent</div><div id="ua" class="v mono"></div></div>
+        <div class="kv"><div class="k">Sprache</div><div id="lang" class="v mono"></div></div>
+        <div class="kv"><div class="k">Cookies</div><div id="cookies" class="v mono"></div></div>
+        <div class="kv"><div class="k">Service Worker</div><div id="sw" class="v mono"></div></div>
+        <div class="kv"><div class="k">WebGL (Vendor/Renderer)</div><div id="webgl" class="v mono"></div></div>
+
+        <div class="kv viz">
+          <div class="k">CPU-Kerne</div>
+          <div class="v mono" id="cores"></div>
+          <div class="cpu-grid" id="cpuGrid" aria-hidden="true"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Simulierte Aktivität</div>
+        </div>
+
+        <div class="kv"><div class="k">RAM (geschätzt)</div><div id="ram" class="v mono"></div></div>
+        <div class="kv"><div class="k">Storage (Nutzung / Quote)</div><div id="storage" class="v mono"></div></div>
+        <div class="kv"><div class="k">Battery</div><div id="battery" class="v mono"></div></div>
+      </div>
+    </section>
+
+    <!-- DISPLAY -->
+    <section id="sec-display">
+      <h2>Display & Orientierung</h2>
+      <div class="grid">
+        <div class="kv"><div class="k">Bildschirmauflösung</div><div id="screen" class="v mono"></div></div>
+        <div class="kv"><div class="k">Viewport</div><div id="viewport" class="v mono"></div></div>
+        <div class="kv"><div class="k">Pixel Ratio</div><div id="dpr" class="v mono"></div></div>
+        <div class="kv"><div class="k">Farbtiefe</div><div id="depth" class="v mono"></div></div>
+
+        <div class="kv viz">
           <div class="k">Ausrichtung</div>
           <div class="v mono" id="orientVal"></div>
-          <div class="cube-container">
-            <div class="cube" id="cube">
-              <div class="face front"></div><div class="face back"></div>
-              <div class="face left"></div><div class="face right"></div>
-              <div class="face top"></div><div class="face bottom"></div>
+          <div class="cube-wrap">
+            <div class="cube-container">
+              <div class="cube" id="cube">
+                <div class="face front"></div><div class="face back"></div>
+                <div class="face left"></div><div class="face right"></div>
+                <div class="face top"></div><div class="face bottom"></div>
+              </div>
+            </div>
+            <div style="min-width:120px">
+              <div style="font-size:13px;color:var(--muted)">Würfel zeigt Geräte-Neigung</div>
             </div>
           </div>
-          <button id="btnOrient" style="margin-left:auto;display:none">Aktivieren</button>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Netzwerk -->
-  <section>
-    <h2>Netzwerk</h2>
-    <div class="grid">
-      <div class="row"><div class="k">Online</div><div id="online" class="v mono"></div></div>
-      <div class="row"><div class="k">Typ</div><div id="netType" class="v mono"></div></div>
-      <div class="row"><div class="k">Downlink</div><div id="downlink" class="v mono"></div></div>
-      <div class="row"><div class="k">RTT</div><div id="rtt" class="v mono"></div></div>
-      <div class="row"><div class="k">IP</div><div id="ip" class="v mono">–</div></div>
-      <div class="viz">
-        <div class="k">Ping</div>
-        <div class="v mono" id="pingText">–</div>
-        <div class="bar" style="margin-top:8px">
-          <div id="pingFill" class="fill"></div>
-          <div id="pingFlash" class="flash"></div>
+    <!-- NETWORK -->
+    <section id="sec-net">
+      <h2>Netzwerk</h2>
+      <div class="grid">
+        <div class="kv"><div class="k">Online-Status</div><div id="online" class="v mono"></div></div>
+        <div class="kv"><div class="k">Netzwerktyp (effektiv)</div><div id="netType" class="v mono"></div></div>
+        <div class="kv"><div class="k">Geschätzte Bandbreite</div><div id="downlink" class="v mono"></div></div>
+        <div class="kv"><div class="k">Geschätzte RTT</div><div id="rtt" class="v mono"></div></div>
+        <div class="kv"><div class="k">Öffentliche IP</div><div id="ip" class="v mono">–</div></div>
+
+        <div class="kv viz">
+          <div class="k">Pseudo-Ping (avg von 3)</div>
+          <div class="v mono" id="pingText">–</div>
+          <div class="bar"><div id="pingFill" class="fill" style="width:0%"></div></div>
+          <div class="ping-meta">
+            <div id="pingIndicator" class="ping-refresh-indicator" title="Refresh"></div>
+            <div style="font-size:12px;color:var(--muted)">Aktualisiert alle <span id="pingIntervalLabel">8s</span></div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Optionen (on demand) -->
-  <section>
-    <h2>Optionen</h2>
-    <div class="grid">
-      <div class="controls">
-        <button id="btnGeo">Standort</button>
-        <div id="geo" class="mono"></div>
+    <!-- OPTIONS / PERMISSIONS -->
+    <section id="sec-perm">
+      <h2>Optionen</h2>
+      <div class="grid">
+        <div class="kv controls">
+          <div class="k">Standort</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="btnGeo">Ermitteln</button>
+              <div id="geo" class="v mono" style="min-width:160px">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kv controls">
+          <div class="k">Mediengeräte</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="btnMedia">Auflisten</button>
+              <div id="media" class="v mono" style="min-width:160px">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kv controls">
+          <div class="k">Bewegungssensoren</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button id="btnMotion">Aktivieren</button>
+              <div id="motion" class="v mono" style="min-width:160px">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kv controls">
+          <div class="k">Fingerprint-Demos</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="btnGLInfo">WebGL Info</button>
+              <button id="btnCanvasFP">Canvas-Hash</button>
+            </div>
+            <div id="fp" class="v mono" style="margin-top:8px;min-height:22px">–</div>
+          </div>
+        </div>
       </div>
-      <div class="controls">
-        <button id="btnMedia">Mediengeräte</button>
-        <div id="media" class="mono"></div>
-      </div>
-      <div class="controls">
-        <button id="btnGLInfo">WebGL Vendor/Renderer</button>
-        <button id="btnCanvas">Canvas-Hash</button>
-        <div id="fp" class="mono"></div>
-      </div>
-      <div class="controls">
-        <button id="btnMotion">Bewegungssensoren</button>
-        <div id="motion" class="mono"></div>
-      </div>
-    </div>
-  </section>
-</main>
+    </section>
+  </main>
 
 <script>
-/* Reveal on scroll */
-const reveal = root => {
-  const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }),{threshold:.15});
-  root.querySelectorAll('.row,.viz,.controls').forEach(el=>io.observe(el));
-};
-reveal(document);
+/* helpers */
+const $ = id => document.getElementById(id);
 
-/* Time */
-const el = id => document.getElementById(id);
+/* Reveal-on-scroll */
+(function(){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold: .12});
+  document.querySelectorAll('.kv, .viz, .controls').forEach(el => io.observe(el));
+})();
+
+/* TIME & UPTIME (fast refresh für Millisekunden) */
 const startTs = Date.now();
-function pad(n){return n.toString().padStart(2,'0')}
-function tick(){
+function pad2(n){return String(n).padStart(2,'0')}
+function tickTime(){
   const now = new Date();
-  el('t_local').textContent = now.toLocaleTimeString();
-  el('t_ms').textContent = Date.now().toString();
-  const s = Math.floor((Date.now()-startTs)/1000); const m = Math.floor(s/60);
-  el('t_up').textContent = `${m}m ${pad(s%60)}s`;
-  el('tz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const ms = String(now.getMilliseconds()).padStart(3,'0');
+  $('t_local').textContent = now.toLocaleTimeString() + '.' + ms;
+  $('t_ms').textContent = Date.now().toString();
+  const s = Math.floor((Date.now() - startTs)/1000), m = Math.floor(s/60);
+  $('t_up').textContent = `${m}m ${pad2(s%60)}s`;
+  $('tz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
-setInterval(tick, 250); tick();
+setInterval(tickTime, 20);
+tickTime();
 
-/* System */
-el('os').textContent = navigator.platform || '–';
-el('browser').textContent = (navigator.userAgentData && navigator.userAgentData.brands
-  ? navigator.userAgentData.brands.map(b=>`${b.brand} ${b.version}`).join(', ')
-  : (navigator.userAgent.split(') ').pop() || navigator.userAgent));
-el('ua').textContent = navigator.userAgent;
-el('lang').textContent = navigator.language || '–';
-el('cookies').textContent = navigator.cookieEnabled ? 'Ja' : 'Nein';
-el('sw').textContent = ('serviceWorker' in navigator) ? 'Ja' : 'Nein';
+/* SYSTEM */
+$('os').textContent = navigator.platform || '–';
+$('ua').textContent = navigator.userAgent || '–';
+$('lang').textContent = navigator.language || '–';
+$('cookies').textContent = navigator.cookieEnabled ? 'Ja' : 'Nein';
+$('sw').textContent = ('serviceWorker' in navigator) ? 'Ja' : 'Nein';
 
-/* WebGL basic vendor/renderer */
+/* Browser brands (if available) */
+if (navigator.userAgentData && navigator.userAgentData.brands){
+  try { $('browser').textContent = navigator.userAgentData.brands.map(b=>`${b.brand} ${b.version}`).join(', '); } catch(e){}
+}
+if (!$('browser').textContent) $('browser').textContent = (navigator.userAgent.split(') ').pop() || navigator.userAgent);
+
+/* WebGL vendor/renderer (basic) */
 (function(){
   try{
-    const c=document.createElement('canvas'); const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
-    if(!gl){ el('webgl').textContent='–'; return; }
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if(!gl){ $('webgl').textContent = '–'; return; }
     const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    const vendor = ext? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
-    const renderer = ext? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    el('webgl').textContent = `${vendor} / ${renderer}`;
-  }catch{ el('webgl').textContent='–'; }
+    const vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    $('webgl').textContent = `${vendor} / ${renderer}`;
+  }catch(e){ $('webgl').textContent = '–'; }
 })();
 
-/* CPU grid */
+/* CPU cores grid */
 const cores = navigator.hardwareConcurrency || 1;
-el('cores').textContent = String(cores);
-const grid = el('cpuGrid');
-for(let i=0;i<cores;i++){ const d=document.createElement('div'); d.className='core'; grid.appendChild(d); }
+$('cores').textContent = String(cores);
+const cpuGrid = $('cpuGrid');
+for(let i=0;i<cores;i++){ const d = document.createElement('div'); d.className='core'; cpuGrid.appendChild(d); }
 setInterval(()=>{ document.querySelectorAll('.core').forEach(c=>c.classList.toggle('active', Math.random()>0.5)); }, 900);
 
-el('ram').textContent = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '–';
+/* RAM */
+$('ram').textContent = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '–';
 
-/* Storage */
-if(navigator.storage?.estimate){
+/* Storage estimate */
+if (navigator.storage && navigator.storage.estimate) {
   navigator.storage.estimate().then(({quota,usage})=>{
-    const fmt=n=>n?(n/1024/1024).toFixed(1)+' MB':'–';
-    el('storage').textContent = `${fmt(usage)} / ${fmt(quota)}`;
-  }).catch(()=>{el('storage').textContent='–';});
-}else{ el('storage').textContent='–'; }
+    const fmt = n => n ? (n/1024/1024).toFixed(1)+' MB' : '–';
+    $('storage').textContent = `${fmt(usage)} / ${fmt(quota)}`;
+  }).catch(()=>{ $('storage').textContent = '–'; });
+} else { $('storage').textContent = '–'; }
 
 /* Battery */
-if(navigator.getBattery){
-  navigator.getBattery().then(b=>{
-    const upd=()=>{ el('battery').textContent = `${Math.round(b.level*100)}% ${b.charging?'(Laden)':''}`; };
-    upd(); b.addEventListener('levelchange',upd); b.addEventListener('chargingchange',upd);
-  }).catch(()=> el('battery').textContent='–');
-}else{ el('battery').textContent='–'; }
+if ('getBattery' in navigator) {
+  navigator.getBattery().then(b => {
+    const upd = ()=> $('battery').textContent = `${Math.round(b.level*100)}% ${b.charging? '(lädt)': '(entlädt)'}`;
+    upd();
+    b.addEventListener('levelchange', upd);
+    b.addEventListener('chargingchange', upd);
+  }).catch(()=> $('battery').textContent = '–');
+} else { $('battery').textContent = '–'; }
 
-/* Display */
-function updDisp(){
-  el('screen').textContent = `${screen.width}×${screen.height}`;
-  el('viewport').textContent = `${innerWidth}×${innerHeight}`;
-  el('dpr').textContent = String(devicePixelRatio||1);
-  el('depth').textContent = screen.colorDepth ? `${screen.colorDepth} bit` : '–';
+/* DISPLAY */
+function updateDisplay(){
+  $('screen').textContent = `${screen.width}×${screen.height}`;
+  $('viewport').textContent = `${window.innerWidth}×${window.innerHeight}`;
+  $('dpr').textContent = String(window.devicePixelRatio || 1);
+  $('depth').textContent = screen.colorDepth ? `${screen.colorDepth} bit` : '–';
 }
-updDisp(); addEventListener('resize', updDisp);
+updateDisplay();
+addEventListener('resize', updateDisplay);
 
-/* Orientation + 3D cube */
-function setOrientVal(){
-  const o = (screen.orientation && screen.orientation.type) ? screen.orientation.type
-            : (matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape");
-  el('orientVal').textContent = o;
+/* ORIENTATION value + cube */
+function updateOrientValue(){
+  const type = (screen.orientation && screen.orientation.type) ? screen.orientation.type : (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
+  $('orientVal').textContent = type.includes('portrait') ? 'Hochformat' : 'Querformat';
 }
-setOrientVal();
-if(screen.orientation) screen.orientation.addEventListener('change', setOrientVal);
+updateOrientValue();
+if (screen.orientation) screen.orientation.addEventListener('change', ()=>{ updateOrientValue(); });
+addEventListener('resize', updateOrientValue);
 
-const cube = el('cube');
-function handleOrientation(e){
-  const x = e.beta || 0;  // front/back
-  const y = e.gamma || 0; // left/right
-  cube.style.transform = `rotateX(${-x}deg) rotateY(${y}deg)`;
+/* cube rotate: deviceorientation */
+const cubeEl = $('cube');
+function handleDeviceOrientation(e){
+  const x = e.beta || 0;  // -180..180
+  const y = e.gamma || 0; // -90..90
+  cubeEl.style.transform = `rotateX(${-x}deg) rotateY(${y}deg)`;
 }
-(function initOrientation(){
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
-    el('btnOrient').style.display='inline-block';
-    el('btnOrient').onclick = async ()=>{
-      try{
-        const res = await DeviceOrientationEvent.requestPermission();
-        if(res==='granted'){ window.addEventListener('deviceorientation', handleOrientation); el('btnOrient').style.display='none'; }
-      }catch{}
-    };
-  }else{
-    window.addEventListener('deviceorientation', handleOrientation);
-  }
-})();
+/* iOS permission flow if necessary */
+if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+  // show no UI; automatically try adding listener when possible
+  // we won't request permission automatically to avoid annoying prompt
+  window.addEventListener('deviceorientation', handleDeviceOrientation);
+} else {
+  window.addEventListener('deviceorientation', handleDeviceOrientation);
+}
 
-/* Netzwerk */
-function netBasics(){
-  el('online').textContent = navigator.onLine ? 'Online' : 'Offline';
-  if('connection' in navigator){
+/* NETWORK basics */
+function updateNetworkBasics(){
+  $('online').textContent = navigator.onLine ? 'Online' : 'Offline';
+  if ('connection' in navigator) {
     const c = navigator.connection;
-    el('netType').textContent = c.effectiveType || '–';
-    el('downlink').textContent = c.downlink ? `${c.downlink} Mbps` : '–';
-    el('rtt').textContent = c.rtt ? `${c.rtt} ms` : '–';
-    c.addEventListener('change', netBasics);
-  }else{
-    el('netType').textContent='–'; el('downlink').textContent='–'; el('rtt').textContent='–';
+    $('netType').textContent = c.effectiveType || '–';
+    $('downlink').textContent = c.downlink ? `${c.downlink} Mbps` : '–';
+    $('rtt').textContent = c.rtt ? `${c.rtt} ms` : '–';
+  } else {
+    $('netType').textContent = '–'; $('downlink').textContent = '–'; $('rtt').textContent = '–';
   }
 }
-netBasics(); addEventListener('online', netBasics); addEventListener('offline', netBasics);
+updateNetworkBasics();
+addEventListener('online', updateNetworkBasics);
+addEventListener('offline', updateNetworkBasics);
+if ('connection' in navigator) navigator.connection.addEventListener('change', updateNetworkBasics);
 
-/* Public IP */
-fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{ el('ip').textContent=d.ip; }).catch(()=>{ el('ip').textContent='–'; });
+/* Public IP (api) */
+fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => { $('ip').textContent = d.ip; }).catch(()=>{ $('ip').textContent = '–'; });
 
-/* Ping */
-async function measurePing(){
-  const flash = el('pingFlash'); flash.classList.remove('animate'); void flash.offsetWidth; flash.classList.add('animate');
-  try{
-    const tries=3, ts=[];
-    for(let i=0;i<tries;i++){ const t1=performance.now(); await fetch('https://www.google.com',{cache:'no-store',mode:'no-cors'}); ts.push(performance.now()-t1); }
-    const avg = ts.reduce((a,b)=>a+b,0)/ts.length;
-    el('pingText').textContent = `${avg.toFixed(1)} ms`;
-    const fill = el('pingFill');
-    const pct = Math.min(100, Math.max(5, avg)); // simple map
-    fill.style.width = pct+'%';
-    fill.style.background = avg>200 ? 'var(--err)' : (avg>100 ? 'var(--warn)' : 'var(--ok)');
-  }catch{ el('pingText').textContent='–'; el('pingFill').style.width='0%'; }
+/* PSEUDO-PING with animated progress bar */
+let pingInterval = 8000;
+$('pingIntervalLabel').textContent = (pingInterval/1000)+'s';
+const pingFill = $('pingFill');
+const pingIndicator = $('pingIndicator');
+
+async function measurePingOnce(){
+  // indicator flash
+  pingIndicator.classList.add('active');
+  setTimeout(()=>pingIndicator.classList.remove('active'), 700);
+
+  try {
+    const tries = 3;
+    const times = [];
+    for (let i=0;i<tries;i++){
+      const t1 = performance.now();
+      // no-cors fetch to a big endpoint; timing is approximate
+      await fetch('https://www.google.com', {cache:'no-store', mode:'no-cors'});
+      const t2 = performance.now();
+      times.push(t2 - t1);
+      await new Promise(r => setTimeout(r, 120)); // small gap
+    }
+    const avg = times.reduce((a,b)=>a+b,0)/times.length;
+    $('pingText').textContent = `${avg.toFixed(1)} ms`;
+    // map avg to percent bar (simple mapping)
+    const pct = Math.min(100, Math.max(3, avg));
+    pingFill.style.background = avg > 200 ? 'var(--err)' : (avg > 100 ? 'var(--warn)' : 'var(--ok)');
+  } catch(e){
+    $('pingText').textContent = 'Fehler';
+    pingFill.style.background = 'var(--err)';
+  }
+
+  // start linear progress to next refresh
+  pingFill.style.transition = 'none';
+  pingFill.style.width = '0%';
+  // slight delay to allow style reset
+  setTimeout(()=> {
+    pingFill.style.transition = `width ${pingInterval}ms linear`;
+    pingFill.style.width = '100%';
+  }, 60);
 }
-measurePing(); setInterval(measurePing, 10_000);
 
-/* Optionen */
-el('btnGeo')?.addEventListener('click', ()=>{
-  if(!navigator.geolocation){ el('geo').textContent='–'; return; }
-  navigator.geolocation.getCurrentPosition(
-    p=>{ const {latitude,longitude,accuracy}=p.coords; el('geo').textContent=`Lat ${latitude.toFixed(6)}, Lon ${longitude.toFixed(6)} (±${Math.round(accuracy)}m)`; },
-    e=>{ el('geo').textContent='–'; },
-    {enableHighAccuracy:true, timeout:8000, maximumAge:0}
-  );
+/* initial measure + interval */
+measurePingOnce();
+setInterval(measurePingOnce, pingInterval);
+
+/* PERMISSION-BASED FEATURES */
+
+/* GEO */
+$('btnGeo').addEventListener('click', ()=>{
+  if (!('geolocation' in navigator)) { $('geo').textContent = '–'; return; }
+  $('geo').textContent = '…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $('geo').textContent = `Lat ${pos.coords.latitude.toFixed(6)}, Lon ${pos.coords.longitude.toFixed(6)} (±${Math.round(pos.coords.accuracy)} m)`;
+  }, err=>{
+    $('geo').textContent = 'Blockiert';
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
 });
 
-el('btnMedia')?.addEventListener('click', async ()=>{
-  if(!navigator.mediaDevices?.enumerateDevices){ el('media').textContent='–'; return; }
-  try{
+/* MEDIA DEVICES */
+$('btnMedia').addEventListener('click', async ()=>{
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) { $('media').textContent = '–'; return; }
+  try {
     const devs = await navigator.mediaDevices.enumerateDevices();
-    el('media').textContent = devs.map(d=>`${d.kind}: ${d.label||'(ohne Label)'} [${d.deviceId.slice(0,8)}…]`).join('\n') || '–';
-  }catch{ el('media').textContent='–'; }
+    if (!devs.length) { $('media').textContent = 'Keine Geräte'; return; }
+    $('media').textContent = devs.map(d => `${d.kind}: ${d.label || '(ohne Label)'} [${d.deviceId.slice(0,8)}…]`).join('\n');
+  } catch(e) {
+    $('media').textContent = 'Fehler / Berechtigung';
+  }
 });
 
-el('btnGLInfo')?.addEventListener('click', ()=>{
+/* MOTION */
+$('btnMotion').addEventListener('click', async ()=>{
+  const out = $('motion');
+  out.textContent = '…';
+  function attach(){
+    let last = 0;
+    window.addEventListener('devicemotion', ev=>{
+      const a = ev.accelerationIncludingGravity || ev.acceleration;
+      if (!a) { out.textContent = 'Keine Daten'; return; }
+      const now = Date.now();
+      if (now - last < 180) return;
+      last = now;
+      out.textContent = `ax=${(a.x||0).toFixed(2)} ay=${(a.y||0).toFixed(2)} az=${(a.z||0).toFixed(2)}`;
+    });
+  }
+
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+    try{
+      const res = await DeviceMotionEvent.requestPermission();
+      if (res === 'granted') attach(); else out.textContent = 'Abgelehnt';
+    }catch(e){ out.textContent = 'Abgelehnt / Fehler'; }
+  } else {
+    attach();
+  }
+});
+
+/* WEBGL INFO (on demand) */
+$('btnGLInfo').addEventListener('click', ()=>{
   try{
-    const c=document.createElement('canvas'); const gl=c.getContext('webgl');
-    if(!gl){ el('fp').textContent='–'; return; }
-    const ext=gl.getExtension('WEBGL_debug_renderer_info');
-    const vendor=ext? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
-    const renderer=ext? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    el('fp').textContent=`${vendor} / ${renderer}`;
-  }catch{ el('fp').textContent='–'; }
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if (!gl) { $('fp').textContent = 'WebGL nicht verfügbar'; return; }
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    $('fp').textContent = `Vendor: ${vendor} | Renderer: ${renderer}`;
+  } catch(e){ $('fp').textContent = 'Fehler'; }
 });
 
-el('btnCanvas')?.addEventListener('click', ()=>{
-  const c=document.createElement('canvas'); c.width=240; c.height=60; const g=c.getContext('2d');
-  g.textBaseline='top'; g.font='16px "Times New Roman"'; g.fillText('fingerprint-demo-äöüß', 6, 6);
-  const data=c.toDataURL(); let h=0; for(let i=0;i<data.length;i++){ h=(h*31 + data.charCodeAt(i))|0; }
-  el('fp').textContent = 'Canvas ' + ('00000000'+(h>>>0).toString(16)).slice(-8);
+/* CANVAS HASH */
+$('btnCanvasFP').addEventListener('click', ()=>{
+  const c = document.createElement('canvas'); c.width = 300; c.height = 80;
+  const g = c.getContext('2d');
+  g.fillStyle = '#0f1720'; g.fillRect(0,0,c.width,c.height);
+  g.textBaseline = 'top'; g.font = '16px Times New Roman';
+  g.fillStyle = '#ffffff'; g.fillText('fingerprint-demo-äöüß', 8, 12);
+  const data = c.toDataURL();
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < data.length; i++){
+    h ^= data.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  $('fp').textContent = 'Canvas ' + ('00000000' + h.toString(16)).slice(-8);
 });
 
-el('btnMotion')?.addEventListener('click', async ()=>{
-  const out=el('motion'); function attach(){ let last; window.addEventListener('devicemotion', e=>{ const a=e.accelerationIncludingGravity||e.acceleration; if(!a) return; const now=Date.now(); if(last && now-last<250) return; last=now; out.textContent=`ax=${(a.x||0).toFixed(2)} ay=${(a.y||0).toFixed(2)} az=${(a.z||0).toFixed(2)}`; }); }
-  if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
-    try{ const res=await DeviceMotionEvent.requestPermission(); if(res==='granted') attach(); }catch{}
-  }else attach();
-});
+/* INITIAL NETWORK IP fetch (again periodically) */
+setInterval(()=> fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>$('ip').textContent = d.ip).catch(()=>{}), 60_000);
+
+/* final: update accessibility text labels for ping interval */
+$('pingIntervalLabel').textContent = (pingInterval/1000) + 's';
 </script>
 </body>
 </html>
