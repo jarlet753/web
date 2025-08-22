@@ -2,136 +2,193 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>System- und Zeitinformationen</title>
+<title>System Dashboard</title>
 <style>
   body {
+    margin: 0;
+    padding: 0;
     background: #0d1117;
     color: #e6edf3;
-    font-family: "Courier New", monospace;
-    margin: 0;
-    padding: 30px;
+    font-family: "Segoe UI", sans-serif;
   }
-  h1 {
-    color: #58a6ff;
+  header {
     text-align: center;
-    margin-bottom: 40px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #0d1117, #161b22);
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
   }
-  .info {
-    background: #161b22;
-    margin: 20px auto;
+  header h1 {
+    font-size: 2.8em;
+    color: #58a6ff;
+    margin: 0;
+  }
+  section {
+    max-width: 1000px;
+    margin: 60px auto;
     padding: 20px;
-    border-radius: 10px;
-    max-width: 800px;
+  }
+  .card {
+    background: #161b22;
+    margin: 20px 0;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(88,166,255,0.15);
     opacity: 0;
     transform: translateY(40px);
-    transition: all 0.8s ease-out;
-    box-shadow: 0 0 20px rgba(88,166,255,0.1);
+    transition: all 0.8s ease;
   }
-  .info.visible {
+  .card.visible {
     opacity: 1;
     transform: translateY(0);
   }
   .label {
+    display: block;
+    font-size: 0.9em;
     color: #8b949e;
-    display: inline-block;
-    width: 220px;
+    margin-bottom: 6px;
   }
   .value {
-    color: #58a6ff;
+    font-size: 1.2em;
     font-weight: bold;
+    color: #58a6ff;
+  }
+
+  /* Zeit-Anzeige */
+  #timeDisplay {
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+    color: #ff7b72;
+    margin: 20px 0;
+  }
+  #uptime {
+    text-align: center;
+    font-size: 1.1em;
+    color: #c9d1d9;
+  }
+
+  /* CPU Kerne Visualisierung */
+  .cpu-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .cpu-core {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: #30363d;
+    transition: background 0.4s ease;
+  }
+  .cpu-core.active {
+    background: #58a6ff;
+    box-shadow: 0 0 10px rgba(88,166,255,0.6);
+  }
+
+  /* Netzwerk */
+  .ping-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: #30363d;
+    margin-top: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ping-fill {
+    height: 100%;
+    width: 0%;
+    background: #3fb950;
+    transition: width 0.5s ease;
   }
 </style>
 </head>
 <body>
-<h1>System- und Zeitinformationen</h1>
+<header>
+  <h1>System Dashboard</h1>
+  <div id="timeDisplay">--:--:--</div>
+  <div id="uptime">Seite offen seit 0m 0s</div>
+</header>
 
-<div class="info"><span class="label">Aktuelle Zeit:</span> <span id="time" class="value"></span></div>
-<div class="info"><span class="label">Seitendauer:</span> <span id="pageTime" class="value"></span></div>
-<div class="info"><span class="label">Zeitzone:</span> <span id="timezone" class="value"></span></div>
+<section>
+  <h2>🖥 Systeminformationen</h2>
+  <div class="card"><span class="label">Betriebssystem:</span><span id="os" class="value"></span></div>
+  <div class="card"><span class="label">Browser:</span><span id="browser" class="value"></span></div>
+  <div class="card"><span class="label">User-Agent:</span><span id="ua" class="value"></span></div>
+  <div class="card"><span class="label">Sprache:</span><span id="language" class="value"></span></div>
+  <div class="card"><span class="label">Bildschirmauflösung:</span><span id="screen" class="value"></span></div>
+  <div class="card"><span class="label">Viewport:</span><span id="viewport" class="value"></span></div>
+  <div class="card"><span class="label">CPU-Kerne:</span>
+    <span id="cpu" class="value"></span>
+    <div class="cpu-grid" id="cpuGrid"></div>
+  </div>
+  <div class="card"><span class="label">RAM (geschätzt):</span><span id="ram" class="value"></span></div>
+</section>
 
-<div class="info"><span class="label">Betriebssystem:</span> <span id="os" class="value"></span></div>
-<div class="info"><span class="label">Browser:</span> <span id="browser" class="value"></span></div>
-<div class="info"><span class="label">User-Agent:</span> <span id="ua" class="value"></span></div>
-<div class="info"><span class="label">Sprache:</span> <span id="language" class="value"></span></div>
-
-<div class="info"><span class="label">Bildschirmauflösung:</span> <span id="screen" class="value"></span></div>
-<div class="info"><span class="label">Viewport:</span> <span id="viewport" class="value"></span></div>
-<div class="info"><span class="label">Ausrichtung:</span> <span id="orientation" class="value"></span></div>
-<div class="info"><span class="label">Farbentiefe:</span> <span id="depth" class="value"></span></div>
-<div class="info"><span class="label">Pixel Ratio:</span> <span id="dpr" class="value"></span></div>
-
-<div class="info"><span class="label">Anzahl CPU-Kerne:</span> <span id="cpu" class="value"></span></div>
-<div class="info"><span class="label">RAM (geschätzt):</span> <span id="ram" class="value"></span></div>
-<div class="info"><span class="label">Touchscreen:</span> <span id="touch" class="value"></span></div>
-
-<div class="info"><span class="label">Online-Status:</span> <span id="online" class="value"></span></div>
-<div class="info"><span class="label">Cookies aktiviert:</span> <span id="cookies" class="value"></span></div>
-<div class="info"><span class="label">JavaScript:</span> <span class="value">Aktiv</span></div>
-<div class="info"><span class="label">Referrer:</span> <span id="referrer" class="value"></span></div>
-
-<div class="info"><span class="label">Netzwerktyp:</span> <span id="netType" class="value"></span></div>
-<div class="info"><span class="label">Geschätzte Bandbreite:</span> <span id="downlink" class="value"></span></div>
-<div class="info"><span class="label">Geschätzte RTT:</span> <span id="rtt" class="value"></span></div>
-<div class="info"><span class="label">Pseudo-Ping:</span> <span id="ping" class="value"></span></div>
-
-<div class="info"><span class="label">Öffentliche IP:</span> <span id="ip" class="value"></span></div>
+<section>
+  <h2>🌐 Netzwerk</h2>
+  <div class="card"><span class="label">Öffentliche IP:</span><span id="ip" class="value"></span></div>
+  <div class="card"><span class="label">Netzwerktyp:</span><span id="netType" class="value"></span></div>
+  <div class="card"><span class="label">Geschätzte Bandbreite:</span><span id="downlink" class="value"></span></div>
+  <div class="card"><span class="label">Geschätzte RTT:</span><span id="rtt" class="value"></span></div>
+  <div class="card">
+    <span class="label">Pseudo-Ping:</span><span id="ping" class="value"></span>
+    <div class="ping-bar"><div id="pingFill" class="ping-fill"></div></div>
+  </div>
+</section>
 
 <script>
-// Intersection Observer für Scroll-Animationen
-const infos = document.querySelectorAll('.info');
+// Scroll-Animation
+const cards = document.querySelectorAll('.card');
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) entry.target.classList.add('visible');
   });
 }, { threshold: 0.2 });
-infos.forEach(info => observer.observe(info));
+cards.forEach(c => observer.observe(c));
 
-// Live Uhrzeit
-function updateTime() {
-  document.getElementById("time").textContent = new Date().toLocaleString();
+// Zeit
+function updateClock() {
+  document.getElementById("timeDisplay").textContent = new Date().toLocaleTimeString();
 }
-setInterval(updateTime, 1000);
-updateTime();
+setInterval(updateClock, 1000);
+updateClock();
 
 // Seitendauer
-let startTime = Date.now();
+let start = Date.now();
 setInterval(() => {
-  let diff = Math.floor((Date.now() - startTime) / 1000);
+  let diff = Math.floor((Date.now() - start) / 1000);
   let min = Math.floor(diff / 60);
   let sec = diff % 60;
-  document.getElementById("pageTime").textContent = `${min}m ${sec}s`;
+  document.getElementById("uptime").textContent = `Seite offen seit ${min}m ${sec}s`;
 }, 1000);
 
-// Standard Infos
-document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// System Infos
 document.getElementById("os").textContent = navigator.platform || "Unbekannt";
 document.getElementById("browser").textContent = navigator.userAgent.split(") ").pop();
 document.getElementById("ua").textContent = navigator.userAgent;
 document.getElementById("language").textContent = navigator.language;
 document.getElementById("screen").textContent = `${screen.width}x${screen.height}`;
 document.getElementById("viewport").textContent = `${window.innerWidth}x${window.innerHeight}`;
-document.getElementById("orientation").textContent = screen.orientation ? screen.orientation.type : "Unbekannt";
-document.getElementById("depth").textContent = screen.colorDepth + " bit";
-document.getElementById("dpr").textContent = window.devicePixelRatio;
 
-// Hardware Infos
-document.getElementById("cpu").textContent = navigator.hardwareConcurrency || "Nicht verfügbar";
-document.getElementById("ram").textContent = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Nicht verfügbar";
-document.getElementById("touch").textContent = 'ontouchstart' in window ? "Ja" : "Nein";
-
-// Online/Cookies
-function updateOnline() {
-  document.getElementById("online").textContent = navigator.onLine ? "Online" : "Offline";
+let cores = navigator.hardwareConcurrency || 1;
+document.getElementById("cpu").textContent = cores;
+let grid = document.getElementById("cpuGrid");
+for (let i = 0; i < cores; i++) {
+  let coreDiv = document.createElement("div");
+  coreDiv.className = "cpu-core";
+  grid.appendChild(coreDiv);
 }
-updateOnline();
-window.addEventListener("online", updateOnline);
-window.addEventListener("offline", updateOnline);
-document.getElementById("cookies").textContent = navigator.cookieEnabled ? "Ja" : "Nein";
+// CPU Kerne Animation (simuliert Auslastung)
+setInterval(() => {
+  document.querySelectorAll(".cpu-core").forEach(c => {
+    c.classList.toggle("active", Math.random() > 0.5);
+  });
+}, 800);
 
-// Referrer
-document.getElementById("referrer").textContent = document.referrer || "Direkt";
+document.getElementById("ram").textContent = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Nicht verfügbar";
 
-// Netzwerk Infos (falls verfügbar)
+// Netzwerk Infos
 if (navigator.connection) {
   document.getElementById("netType").textContent = navigator.connection.effectiveType || "Unbekannt";
   document.getElementById("downlink").textContent = navigator.connection.downlink ? navigator.connection.downlink + " Mbps" : "Unbekannt";
@@ -142,31 +199,27 @@ if (navigator.connection) {
   document.getElementById("rtt").textContent = "Nicht unterstützt";
 }
 
-// Pseudo-Ping Funktion
-async function pseudoPing(url) {
+// Pseudo-Ping Messung
+async function measurePing() {
   try {
-    let start = performance.now();
-    await fetch(url, {cache: "no-store", mode: "no-cors"});
-    let end = performance.now();
-    document.getElementById("ping").textContent = (end - start).toFixed(2) + " ms";
-  } catch (e) {
+    let times = [];
+    for (let i = 0; i < 3; i++) {
+      let t1 = performance.now();
+      await fetch("https://www.google.com", {cache:"no-store"});
+      let t2 = performance.now();
+      times.push(t2 - t1);
+    }
+    let avg = times.reduce((a,b)=>a+b,0)/times.length;
+    document.getElementById("ping").textContent = avg.toFixed(2) + " ms";
+    let percent = Math.min(100, avg);
+    document.getElementById("pingFill").style.width = percent + "%";
+    document.getElementById("pingFill").style.background = avg > 100 ? "#f85149" : "#3fb950";
+  } catch(e) {
     document.getElementById("ping").textContent = "Fehler";
   }
 }
-
-// Mehrfach messen und Mittelwert nehmen
-async function measurePing() {
-  let times = [];
-  for (let i = 0; i < 3; i++) {
-    let start = performance.now();
-    await fetch("https://www.google.com", {cache: "no-store"});
-    let end = performance.now();
-    times.push(end - start);
-  }
-  let avg = times.reduce((a,b) => a+b, 0) / times.length;
-  document.getElementById("ping").textContent = avg.toFixed(2) + " ms";
-}
 measurePing();
+setInterval(measurePing, 10000);
 
 // IP-Adresse
 fetch("https://api.ipify.org?format=json")
