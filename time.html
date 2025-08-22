@@ -1,382 +1,214 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>System & Netzwerk Dashboard</title>
+<meta charset="UTF-8">
+<title>Pro Dashboard</title>
 <style>
-  :root{
-    --bg:#0b0f14;
-    --panel:#121821;
-    --panel-2:#0f1520;
-    --text:#e6edf3;
-    --muted:#8b949e;
-    --brand:#4ea1ff;
-    --ok:#3fb950;
-    --warn:#f0883e;
-    --err:#f85149;
-    --accent:#7ee787;
+  body {
+    margin: 0;
+    padding: 0;
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: "Segoe UI", sans-serif;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 "Inter",ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  header{
-    position:sticky;top:0;z-index:10;
-    background:linear-gradient(180deg,rgba(13,17,23,.9),rgba(13,17,23,.5) 60%,rgba(13,17,23,0));
-    backdrop-filter:saturate(140%) blur(6px);
-    border-bottom:1px solid #1f2733;
+  header {
+    text-align: center;
+    padding: 30px;
+    background: #161b22;
+    border-bottom: 2px solid #21262d;
   }
-  .wrap{max-width:1100px;margin:0 auto;padding:16px 20px}
-  h1{margin:6px 0 2px;font-size:24px;color:var(--brand);letter-spacing:.2px}
-  .sub{color:var(--muted);font-size:13px}
-  main{max-width:1100px;margin:10px auto 64px;padding:0 20px;display:grid;gap:18px}
-  section{background:var(--panel);border:1px solid #1f2733;border-radius:12px;overflow:hidden}
-  section>h2{margin:0;padding:14px 16px;border-bottom:1px solid #1f2733;background:var(--panel-2);font-size:16px;color:#c9d1d9}
-  .grid{display:grid;gap:10px;padding:14px 16px}
-  .kv{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border-radius:8px;background:#0e1420}
-  .kv .k{min-width:220px;color:var(--muted)}
-  .kv .v{font-weight:600;color:var(--brand);word-break:break-word}
-  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
-  /* Cards that fade-in on scroll */
-  .kv, .viz, .controls{opacity:0;transform:translateY(16px);transition:opacity .55s ease, transform .55s ease}
-  .visible{opacity:1;transform:none}
-  /* Time header strip */
-  .timebar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-  .timepill{padding:8px 10px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
-  .timepill .label{color:var(--muted);font-size:12px}
-  .timepill .value{font-weight:700;font-size:18px;color:#ff7b72}
-  /* CPU cores visualization */
-  .viz{padding:12px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
-  .cpu-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(22px,1fr));gap:8px}
-  .core{height:22px;border-radius:6px;background:#273244;box-shadow:inset 0 0 0 1px #2b394f}
-  .core.active{background:linear-gradient(180deg,#4ea1ff,#2e74ff);box-shadow:0 0 10px rgba(78,161,255,.55)}
-  /* Ping bar */
-  .bar{height:10px;background:#273244;border-radius:6px;overflow:hidden}
-  .fill{height:100%;width:0;background:var(--ok);transition:width .4s ease, background .3s ease}
-  /* Buttons */
-  .controls{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0}
-  button{
-    background:#1a2230;color:var(--text);border:1px solid #2a3648;border-radius:8px;
-    padding:8px 12px;font-weight:600;cursor:pointer
+  header h1 {
+    font-size: 2em;
+    margin: 0;
+    color: #58a6ff;
   }
-  button:hover{border-color:#3a4d6a}
-  small.note{color:var(--muted);display:block;margin-top:6px}
-  /* Responsive key width */
-  @media (max-width:700px){.kv .k{min-width:140px}}
-  @media (prefers-reduced-motion: reduce){
-    .kv,.viz,.controls{transition:none}
+  section {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
   }
+  .card {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(88,166,255,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .value {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #58a6ff;
+  }
+  .label {
+    font-size: 0.85em;
+    color: #8b949e;
+  }
+
+  /* Ping Bar */
+  .ping-bar {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    border-radius: 7px;
+    background: #30363d;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .ping-fill {
+    height: 100%;
+    width: 0%;
+    background: #3fb950;
+    transition: width 0.5s ease;
+  }
+  .ping-refresh {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+  }
+  .ping-refresh.flash {
+    animation: flash 0.6s;
+  }
+  @keyframes flash {
+    0% { opacity: 0.7; }
+    100% { opacity: 0; }
+  }
+
+  /* Device Orientation (3D-Würfel) */
+  .cube-container {
+    width: 100px;
+    height: 100px;
+    perspective: 600px;
+  }
+  .cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    transition: transform 0.2s linear;
+  }
+  .cube div {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: rgba(88,166,255,0.7);
+    border: 2px solid #58a6ff;
+  }
+  .front  { transform: rotateY(0deg) translateZ(50px); }
+  .back   { transform: rotateY(180deg) translateZ(50px); }
+  .left   { transform: rotateY(-90deg) translateZ(50px); }
+  .right  { transform: rotateY(90deg) translateZ(50px); }
+  .top    { transform: rotateX(90deg) translateZ(50px); }
+  .bottom { transform: rotateX(-90deg) translateZ(50px); }
 </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>System & Netzwerk Dashboard</h1>
-      <div class="sub">Lokal laufende Diagnose – keine Daten werden an deinen Server gesendet, außer wo APIs (z. B. IP) explizit abgefragt werden.</div>
-      <div class="timebar" style="margin-top:10px">
-        <div class="timepill"><div class="label">Lokale Zeit</div><div id="t_local" class="value mono">--:--:--</div></div>
-        <div class="timepill"><div class="label">Unix (ms)</div><div id="t_ms" class="value mono">-</div></div>
-        <div class="timepill"><div class="label">Uptime (Seite)</div><div id="t_up" class="value mono">0m 00s</div></div>
-        <div class="timepill"><div class="label">Zeitzone</div><div id="tz" class="value mono">-</div></div>
+<header>
+  <h1>System Dashboard</h1>
+</header>
+
+<section>
+  <div class="card"><span class="label">Zeit</span><span id="time" class="value"></span></div>
+  <div class="card"><span class="label">Zeitzone</span><span id="timezone" class="value"></span></div>
+  <div class="card"><span class="label">Betriebssystem</span><span id="os" class="value"></span></div>
+  <div class="card"><span class="label">Browser</span><span id="browser" class="value"></span></div>
+  <div class="card"><span class="label">CPU Kerne</span><span id="cpu" class="value"></span></div>
+  <div class="card"><span class="label">RAM</span><span id="ram" class="value"></span></div>
+  <div class="card"><span class="label">Bildschirm</span><span id="screen" class="value"></span></div>
+  <div class="card"><span class="label">Viewport</span><span id="viewport" class="value"></span></div>
+  <div class="card"><span class="label">Netzwerktyp</span><span id="netType" class="value"></span></div>
+  <div class="card"><span class="label">RTT</span><span id="rtt" class="value"></span></div>
+  <div class="card"><span class="label">IP</span><span id="ip" class="value"></span></div>
+  <div class="card">
+    <span class="label">Ping</span>
+    <span id="ping" class="value"></span>
+    <div class="ping-bar">
+      <div id="pingFill" class="ping-fill"></div>
+      <div id="pingFlash" class="ping-refresh"></div>
+    </div>
+  </div>
+  <div class="card">
+    <span class="label">Ausrichtung</span>
+    <div class="cube-container">
+      <div class="cube" id="cube">
+        <div class="front"></div>
+        <div class="back"></div>
+        <div class="left"></div>
+        <div class="right"></div>
+        <div class="top"></div>
+        <div class="bottom"></div>
       </div>
     </div>
-  </header>
-
-  <main>
-    <!-- System -->
-    <section id="sec-system">
-      <h2>System</h2>
-      <div class="grid">
-        <div class="kv"><div class="k">Betriebssystem / Plattform</div><div id="os" class="v mono"></div></div>
-        <div class="kv"><div class="k">Browser</div><div id="browser" class="v mono"></div></div>
-        <div class="kv"><div class="k">User-Agent</div><div id="ua" class="v mono"></div></div>
-        <div class="kv"><div class="k">Sprache</div><div id="lang" class="v mono"></div></div>
-        <div class="kv"><div class="k">Cookies aktiviert</div><div id="cookies" class="v mono"></div></div>
-        <div class="kv"><div class="k">Service Worker</div><div id="sw" class="v mono"></div></div>
-        <div class="kv"><div class="k">WebGL</div><div id="webgl" class="v mono"></div></div>
-        <div class="kv viz">
-          <div class="k">CPU-Kerne</div>
-          <div class="v mono" id="cores"></div>
-          <div class="cpu-grid" id="cpuGrid" style="margin-top:8px"></div>
-          <small class="note">Visualisierung simuliert Aktivität, nicht echte Auslastung.</small>
-        </div>
-        <div class="kv"><div class="k">RAM (Schätzung)</div><div id="ram" class="v mono"></div></div>
-        <div class="kv"><div class="k">Storage (Nutzung / Quote)</div><div id="storage" class="v mono"></div></div>
-      </div>
-    </section>
-
-    <!-- Display -->
-    <section id="sec-display">
-      <h2>Display</h2>
-      <div class="grid">
-        <div class="kv"><div class="k">Bildschirmauflösung</div><div id="screen" class="v mono"></div></div>
-        <div class="kv"><div class="k">Viewport</div><div id="viewport" class="v mono"></div></div>
-        <div class="kv"><div class="k">Pixel Ratio</div><div id="dpr" class="v mono"></div></div>
-        <div class="kv"><div class="k">Farbtiefe</div><div id="depth" class="v mono"></div></div>
-        <div class="kv"><div class="k">Ausrichtung</div><div id="orient" class="v mono"></div></div>
-      </div>
-    </section>
-
-    <!-- Netzwerk -->
-    <section id="sec-net">
-      <h2>Netzwerk</h2>
-      <div class="grid">
-        <div class="kv"><div class="k">Online-Status</div><div id="online" class="v mono"></div></div>
-        <div class="kv"><div class="k">Netzwerktyp (effektiv)</div><div id="netType" class="v mono"></div></div>
-        <div class="kv"><div class="k">Downlink (geschätzt)</div><div id="downlink" class="v mono"></div></div>
-        <div class="kv"><div class="k">RTT (geschätzt)</div><div id="rtt" class="v mono"></div></div>
-        <div class="kv"><div class="k">Öffentliche IP</div><div id="ip" class="v mono">–</div></div>
-        <div class="kv viz">
-          <div class="k">Pseudo-Ping (avg, 3 Messungen)</div>
-          <div class="v mono" id="pingText">–</div>
-          <div class="bar" style="margin-top:8px"><div id="pingFill" class="fill"></div></div>
-          <small class="note">Alle 10 s neu gemessen via <code>fetch()</code> (kein ICMP).</small>
-        </div>
-      </div>
-    </section>
-
-    <!-- Berechtigungsbasierte Infos -->
-    <section id="sec-perm">
-      <h2>Optionale Messungen (mit Zustimmung)</h2>
-      <div class="grid">
-        <div class="kv controls">
-          <div class="k">Standort</div>
-          <div class="v">
-            <button id="btnGeo">Standort ermitteln</button>
-            <div id="geo" class="mono" style="margin-top:6px">–</div>
-          </div>
-        </div>
-        <div class="kv controls">
-          <div class="k">Mediengeräte</div>
-          <div class="v">
-            <button id="btnMedia">Geräte auflisten</button>
-            <div id="media" class="mono" style="margin-top:6px">–</div>
-            <small class="note">Labels erscheinen ggf. erst nach Freigabe/Kamera-/Mikro-Zugriff.</small>
-          </div>
-        </div>
-        <div class="kv controls">
-          <div class="k">Bewegungssensoren</div>
-          <div class="v">
-            <button id="btnMotion">Aktivieren</button>
-            <div id="motion" class="mono" style="margin-top:6px">–</div>
-          </div>
-        </div>
-        <div class="kv controls">
-          <div class="k">Fingerprint-Demos</div>
-          <div class="v">
-            <button id="btnGLInfo">WebGL Vendor/Renderer</button>
-            <button id="btnCanvasFP">Canvas-Hash</button>
-            <div id="fp" class="mono" style="margin-top:6px;color:var(--warn)">Deaktiviert – bitte nur zu Demo-Zwecken verwenden.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Quellen -->
-    <section id="sec-src">
-      <h2>Quellen & Doku</h2>
-      <div class="grid">
-        <div class="kv"><div class="k">Network Information API</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/NetworkInformation" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">StorageManager.estimate()</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">WebGL Debug Renderer Info</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/WEBGL_debug_renderer_info" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">Battery API</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/Battery_Status_API" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">MediaDevices.enumerateDevices()</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/MediaDevices/enumerateDevices" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">Geolocation API</div><div class="v"><a href="https://developer.mozilla.org/docs/Web/API/Geolocation_API" target="_blank" rel="noreferrer">MDN</a></div></div>
-        <div class="kv"><div class="k">Öffentliche IP</div><div class="v"><a href="https://api.ipify.org" target="_blank" rel="noreferrer">api.ipify.org</a></div></div>
-      </div>
-    </section>
-  </main>
+  </div>
+</section>
 
 <script>
-/* --------- Scroll-In Observer ---------- */
-const reveal = (root) => {
-  const io = new IntersectionObserver(entries=>{
-    for(const e of entries){ if(e.isIntersecting) e.target.classList.add('visible'); }
-  }, {threshold:.15});
-  root.querySelectorAll('.kv, .viz, .controls').forEach(el=>io.observe(el));
-};
-reveal(document);
-
-/* --------- Time & Uptime ---------- */
-const el = (id)=>document.getElementById(id);
-const startTs = Date.now();
-function pad(n){return n.toString().padStart(2,'0');}
-function tickTime(){
-  const now = new Date();
-  el('t_local').textContent = now.toLocaleTimeString();
-  el('t_ms').textContent = Date.now().toString();
-  el('tz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone + ` (UTC${-now.getTimezoneOffset()/60 >=0 ? '+' : ''}${(-now.getTimezoneOffset()/60)})`;
-  const s = Math.floor((Date.now()-startTs)/1000); const m = Math.floor(s/60); const r = s%60;
-  el('t_up').textContent = `${m}m ${pad(r)}s`;
+// Zeit
+function updateTime() {
+  document.getElementById("time").textContent = new Date().toLocaleTimeString();
 }
-setInterval(tickTime, 250); tickTime();
+setInterval(updateTime, 1000); updateTime();
+document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-/* --------- System ---------- */
-el('os').textContent = navigator.platform || 'Unbekannt';
-el('browser').textContent = (navigator.userAgentData && navigator.userAgentData.brands
-  ? navigator.userAgentData.brands.map(b=>`${b.brand} ${b.version}`).join(', ')
-  : navigator.userAgent.split(') ').pop() || navigator.userAgent);
-el('ua').textContent = navigator.userAgent;
-el('lang').textContent = navigator.language || '–';
-el('cookies').textContent = navigator.cookieEnabled ? 'Ja' : 'Nein';
-el('sw').textContent = ('serviceWorker' in navigator) ? 'Unterstützt' : 'Nicht unterstützt';
+// System Infos
+document.getElementById("os").textContent = navigator.platform;
+document.getElementById("browser").textContent = navigator.userAgent.split(") ").pop();
+document.getElementById("cpu").textContent = navigator.hardwareConcurrency || "?";
+document.getElementById("ram").textContent = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "?";
+document.getElementById("screen").textContent = `${screen.width}x${screen.height}`;
+document.getElementById("viewport").textContent = `${innerWidth}x${innerHeight}`;
 
-const cores = navigator.hardwareConcurrency || 1;
-el('cores').textContent = String(cores);
-const grid = el('cpuGrid');
-for(let i=0;i<cores;i++){ const d=document.createElement('div'); d.className='core'; grid.appendChild(d); }
-setInterval(()=>{ document.querySelectorAll('.core').forEach(c=>c.classList.toggle('active', Math.random()>0.5)); }, 900);
-
-el('ram').textContent = (navigator.deviceMemory? navigator.deviceMemory+' GB':'Nicht verfügbar');
-
-/* Storage usage/quota */
-if (navigator.storage && navigator.storage.estimate) {
-  navigator.storage.estimate().then(({quota,usage})=>{
-    const fmt = (n)=> n ? (n/1024/1024).toFixed(1)+' MB' : '–';
-    el('storage').textContent = `${fmt(usage)} / ${fmt(quota)}`;
-  }).catch(()=>{ el('storage').textContent = 'Nicht verfügbar'; });
-}else{
-  el('storage').textContent = 'Nicht unterstützt';
+// Netzwerk
+if (navigator.connection) {
+  document.getElementById("netType").textContent = navigator.connection.effectiveType || "-";
+  document.getElementById("rtt").textContent = navigator.connection.rtt + " ms";
+} else {
+  document.getElementById("netType").textContent = "?";
+  document.getElementById("rtt").textContent = "?";
 }
 
-/* WebGL info (basic) */
-(function(){
-  try{
-    const c = document.createElement('canvas');
-    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
-    if (!gl) { el('webgl').textContent = 'Nicht verfügbar'; return; }
-    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    const vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
-    const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    el('webgl').textContent = `${vendor} / ${renderer}`;
-  }catch(e){ el('webgl').textContent = 'Fehler'; }
-})();
+// IP
+fetch("https://api.ipify.org?format=json")
+  .then(r => r.json())
+  .then(d => document.getElementById("ip").textContent = d.ip)
+  .catch(()=> document.getElementById("ip").textContent = "?");
 
-/* --------- Display ---------- */
-function updateDisplay(){
-  el('screen').textContent = `${screen.width}×${screen.height}`;
-  el('viewport').textContent = `${window.innerWidth}×${window.innerHeight}`;
-  el('dpr').textContent = String(window.devicePixelRatio || 1);
-  el('depth').textContent = (screen.colorDepth? screen.colorDepth+' bit' : '–');
-  el('orient').textContent = (screen.orientation && screen.orientation.type) ? screen.orientation.type : (window.matchMedia("(orientation: portrait)").matches?'portrait':'landscape');
-}
-updateDisplay();
-addEventListener('resize', updateDisplay);
-if (screen.orientation) screen.orientation.addEventListener('change', updateDisplay);
+// Ping mit Animation
+async function measurePing() {
+  let flash = document.getElementById("pingFlash");
+  flash.classList.add("flash");
+  setTimeout(()=>flash.classList.remove("flash"), 600);
 
-/* --------- Network ---------- */
-function networkBasics(){
-  el('online').textContent = navigator.onLine ? 'Online' : 'Offline';
-  if ('connection' in navigator){
-    const c = navigator.connection;
-    el('netType').textContent = c.effectiveType || '–';
-    el('downlink').textContent = (c.downlink? c.downlink+' Mbps' : '–');
-    el('rtt').textContent = (c.rtt? c.rtt+' ms' : '–');
-    c.addEventListener('change', networkBasics);
-  }else{
-    el('netType').textContent = 'Nicht unterstützt';
-    el('downlink').textContent = 'Nicht unterstützt';
-    el('rtt').textContent = 'Nicht unterstützt';
+  try {
+    let t1 = performance.now();
+    await fetch("https://www.google.com", {mode:"no-cors"});
+    let t2 = performance.now();
+    let ping = (t2 - t1).toFixed(1);
+    document.getElementById("ping").textContent = ping + " ms";
+    document.getElementById("pingFill").style.width = Math.min(ping,100) + "%";
+    document.getElementById("pingFill").style.background = ping > 100 ? "#f85149" : "#3fb950";
+  } catch {
+    document.getElementById("ping").textContent = "Fehler";
+    document.getElementById("pingFill").style.width = "0%";
   }
 }
-networkBasics();
-addEventListener('online', networkBasics);
-addEventListener('offline', networkBasics);
-
-/* Public IP */
-fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{ el('ip').textContent = d.ip; }).catch(()=>{ el('ip').textContent='Nicht verfügbar'; });
-
-/* Pseudo-Ping */
-async function measurePing(){
-  try{
-    const tries = 3; const times = [];
-    for(let i=0;i<tries;i++){
-      const t1 = performance.now();
-      await fetch('https://www.google.com', {cache:'no-store', mode:'no-cors'});
-      const t2 = performance.now();
-      times.push(t2-t1);
-    }
-    const avg = times.reduce((a,b)=>a+b,0)/times.length;
-    el('pingText').textContent = avg.toFixed(1)+' ms';
-    const f = el('pingFill');
-    const pct = Math.min(100, Math.max(5, avg)); /* simple mapping */
-    f.style.width = pct+'%';
-    f.style.background = avg>200 ? 'var(--err)' : (avg>100 ? 'var(--warn)' : 'var(--ok)');
-  }catch(e){
-    el('pingText').textContent = 'Fehler';
-  }
-}
+setInterval(measurePing, 8000);
 measurePing();
-setInterval(measurePing, 10_000);
 
-/* --------- Optional: Permissions / Buttons ---------- */
-el('btnGeo')?.addEventListener('click', ()=>{
-  if (!('geolocation' in navigator)){ el('geo').textContent='Geolocation nicht unterstützt'; return; }
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      const {latitude, longitude, accuracy} = pos.coords;
-      el('geo').textContent = `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)} (±${Math.round(accuracy)} m)`;
-    },
-    err=>{ el('geo').textContent = `Fehler: ${err.message}`; },
-    {enableHighAccuracy:true, timeout:8000, maximumAge:0}
-  );
-});
-
-el('btnMedia')?.addEventListener('click', async ()=>{
-  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices){ el('media').textContent='Nicht unterstützt'; return; }
-  try{
-    const devs = await navigator.mediaDevices.enumerateDevices();
-    if (!devs.length){ el('media').textContent='Keine Geräte gefunden'; return; }
-    el('media').textContent = devs.map(d=>`${d.kind}: ${d.label || '(ohne Label)'} [${d.deviceId.slice(0,8)}…]`).join('\n');
-  }catch(e){ el('media').textContent = 'Fehler: Berechtigung notwendig oder blockiert'; }
-});
-
-el('btnMotion')?.addEventListener('click', async ()=>{
-  const out = el('motion');
-  function attach(){
-    let last;
-    window.addEventListener('devicemotion', e=>{
-      const a = e.accelerationIncludingGravity || e.acceleration;
-      if (!a) { out.textContent = 'Keine Daten'; return; }
-      const now = Date.now(); if (last && now-last < 250) return; last = now;
-      out.textContent = `ax=${(a.x||0).toFixed(2)} ay=${(a.y||0).toFixed(2)} az=${(a.z||0).toFixed(2)}`;
-    });
-    window.addEventListener('deviceorientation', e=>{
-      // optional ergänzend; hier keine Ausgabe-Flut
-    });
-  }
-  // iOS Permission
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-    try{
-      const res = await DeviceMotionEvent.requestPermission();
-      if (res === 'granted') attach(); else out.textContent='Abgelehnt';
-    }catch{ out.textContent='Fehler/Abgelehnt'; }
-  }else{
-    attach();
-  }
-});
-
-el('btnGLInfo')?.addEventListener('click', ()=>{
-  try{
-    const c = document.createElement('canvas');
-    const gl = c.getContext('webgl');
-    if (!gl){ el('fp').textContent='WebGL nicht verfügbar'; return; }
-    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    const vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
-    const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-    el('fp').textContent = `Vendor: ${vendor} | Renderer: ${renderer}`;
-  }catch{ el('fp').textContent='Fehler'; }
-});
-
-el('btnCanvasFP')?.addEventListener('click', ()=>{
-  // sehr einfache Demo: Text zeichnen -> DataURL -> Hash
-  const c = document.createElement('canvas'); c.width=240; c.height=60;
-  const g = c.getContext('2d');
-  g.textBaseline='top'; g.font='16px "Times New Roman"';
-  g.fillText('fingerprint-demo-äöüß🙂', 6, 6);
-  const data = c.toDataURL();
-  // simple hash
-  let h=0; for(let i=0;i<data.length;i++){h = (h*31 + data.charCodeAt(i))|0;}
-  el('fp').textContent = `Canvas-Hash: ${('00000000'+(h>>>0).toString(16)).slice(-8)}`;
+// Device Orientation → Cube drehen
+window.addEventListener("deviceorientation", e => {
+  let cube = document.getElementById("cube");
+  let x = e.beta || 0;  // front-back
+  let y = e.gamma || 0; // left-right
+  cube.style.transform = `rotateX(${-x}deg) rotateY(${y}deg)`;
 });
 </script>
 </body>
