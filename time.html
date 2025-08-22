@@ -1,214 +1,357 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Pro Dashboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>System & Netzwerk Dashboard</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #0d1117;
-    color: #e6edf3;
-    font-family: "Segoe UI", sans-serif;
+  :root{
+    --bg:#0b0f14; --panel:#121821; --panel2:#0f1520; --text:#e6edf3; --muted:#8b949e;
+    --brand:#4ea1ff; --ok:#3fb950; --warn:#f0883e; --err:#f85149;
   }
-  header {
-    text-align: center;
-    padding: 30px;
-    background: #161b22;
-    border-bottom: 2px solid #21262d;
-  }
-  header h1 {
-    font-size: 2em;
-    margin: 0;
-    color: #58a6ff;
-  }
-  section {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-  }
-  .card {
-    background: #161b22;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(88,166,255,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .value {
-    font-size: 1.3em;
-    font-weight: bold;
-    margin-top: 10px;
-    color: #58a6ff;
-  }
-  .label {
-    font-size: 0.85em;
-    color: #8b949e;
-  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 "Inter",ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(13,17,23,.9),rgba(13,17,23,.4) 70%,rgba(13,17,23,0));backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid #1f2733}
+  .wrap{max-width:1100px;margin:0 auto;padding:14px 20px}
+  h1{margin:4px 0 2px;font-size:22px;color:var(--brand);letter-spacing:.2px}
+  .timebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+  .pill{padding:8px 10px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
+  .pill .k{color:var(--muted);font-size:12px}
+  .pill .v{font-weight:700;font-size:18px}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
 
-  /* Ping Bar */
-  .ping-bar {
-    position: relative;
-    width: 100%;
-    height: 14px;
-    border-radius: 7px;
-    background: #30363d;
-    overflow: hidden;
-    margin-top: 10px;
-  }
-  .ping-fill {
-    height: 100%;
-    width: 0%;
-    background: #3fb950;
-    transition: width 0.5s ease;
-  }
-  .ping-refresh {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(255,255,255,0.2);
-    opacity: 0;
-  }
-  .ping-refresh.flash {
-    animation: flash 0.6s;
-  }
-  @keyframes flash {
-    0% { opacity: 0.7; }
-    100% { opacity: 0; }
-  }
+  main{max-width:1100px;margin:12px auto 64px;padding:0 20px;display:grid;gap:18px}
+  section{background:var(--panel);border:1px solid #1f2733;border-radius:12px;overflow:hidden}
+  section>h2{margin:0;padding:12px 16px;border-bottom:1px solid #1f2733;background:var(--panel2);font-size:15px;color:#c9d1d9}
+  .grid{display:grid;gap:10px;padding:14px 16px}
+  .row{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border-radius:8px;background:#0e1420}
+  .row .k{min-width:220px;color:var(--muted)}
+  .row .v{font-weight:600;color:var(--brand);word-break:break-word}
+  .viz, .row, .controls{opacity:0;transform:translateY(14px);transition:opacity .45s ease, transform .45s ease}
+  .visible{opacity:1;transform:none}
+  @media (max-width:700px){.row .k{min-width:140px}}
 
-  /* Device Orientation (3D-Würfel) */
-  .cube-container {
-    width: 100px;
-    height: 100px;
-    perspective: 600px;
-  }
-  .cube {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(0deg) rotateY(0deg);
-    transition: transform 0.2s linear;
-  }
-  .cube div {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: rgba(88,166,255,0.7);
-    border: 2px solid #58a6ff;
-  }
-  .front  { transform: rotateY(0deg) translateZ(50px); }
-  .back   { transform: rotateY(180deg) translateZ(50px); }
-  .left   { transform: rotateY(-90deg) translateZ(50px); }
-  .right  { transform: rotateY(90deg) translateZ(50px); }
-  .top    { transform: rotateX(90deg) translateZ(50px); }
-  .bottom { transform: rotateX(-90deg) translateZ(50px); }
+  /* CPU-Visualisierung */
+  .viz{padding:12px;border-radius:10px;background:#0e1420;border:1px solid #1f2733}
+  .cpu-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(22px,1fr));gap:8px;margin-top:8px}
+  .core{height:22px;border-radius:6px;background:#273244;box-shadow:inset 0 0 0 1px #2b394f}
+  .core.active{background:linear-gradient(180deg,#4ea1ff,#2e74ff);box-shadow:0 0 10px rgba(78,161,255,.55)}
+
+  /* Ping */
+  .bar{height:10px;background:#273244;border-radius:6px;overflow:hidden;position:relative}
+  .fill{height:100%;width:0;background:var(--ok);transition:width .4s ease, background .3s ease}
+  .flash{position:absolute;inset:0;background:rgba(255,255,255,.22);opacity:0}
+  .flash.animate{animation:flash .55s}
+  @keyframes flash{0%{opacity:.8}100%{opacity:0}}
+
+  /* Buttons */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0}
+  button{background:#1a2230;color:var(--text);border:1px solid #2a3648;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+  button:hover{border-color:#3a4d6a}
+
+  /* 3D Ausrichtung – Würfel */
+  .cube-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .cube-container{width:110px;height:110px;perspective:700px}
+  .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;transform:rotateX(0deg) rotateY(0deg);transition:transform .18s linear}
+  .cube .face{position:absolute;width:110px;height:110px;background:rgba(78,161,255,.7);border:2px solid #58a6ff}
+  .front{transform:rotateY(0deg) translateZ(55px)}
+  .back{transform:rotateY(180deg) translateZ(55px)}
+  .left{transform:rotateY(-90deg) translateZ(55px)}
+  .right{transform:rotateY(90deg) translateZ(55px)}
+  .top{transform:rotateX(90deg) translateZ(55px)}
+  .bottom{transform:rotateX(-90deg) translateZ(55px)}
 </style>
 </head>
 <body>
 <header>
-  <h1>System Dashboard</h1>
+  <div class="wrap">
+    <h1>System & Netzwerk Dashboard</h1>
+    <div class="timebar">
+      <div class="pill"><div class="k">Zeit</div><div id="t_local" class="v mono">--:--:--</div></div>
+      <div class="pill"><div class="k">Unix (ms)</div><div id="t_ms" class="v mono">-</div></div>
+      <div class="pill"><div class="k">Uptime</div><div id="t_up" class="v mono">0m 00s</div></div>
+      <div class="pill"><div class="k">Zeitzone</div><div id="tz" class="v mono">-</div></div>
+    </div>
+  </div>
 </header>
 
-<section>
-  <div class="card"><span class="label">Zeit</span><span id="time" class="value"></span></div>
-  <div class="card"><span class="label">Zeitzone</span><span id="timezone" class="value"></span></div>
-  <div class="card"><span class="label">Betriebssystem</span><span id="os" class="value"></span></div>
-  <div class="card"><span class="label">Browser</span><span id="browser" class="value"></span></div>
-  <div class="card"><span class="label">CPU Kerne</span><span id="cpu" class="value"></span></div>
-  <div class="card"><span class="label">RAM</span><span id="ram" class="value"></span></div>
-  <div class="card"><span class="label">Bildschirm</span><span id="screen" class="value"></span></div>
-  <div class="card"><span class="label">Viewport</span><span id="viewport" class="value"></span></div>
-  <div class="card"><span class="label">Netzwerktyp</span><span id="netType" class="value"></span></div>
-  <div class="card"><span class="label">RTT</span><span id="rtt" class="value"></span></div>
-  <div class="card"><span class="label">IP</span><span id="ip" class="value"></span></div>
-  <div class="card">
-    <span class="label">Ping</span>
-    <span id="ping" class="value"></span>
-    <div class="ping-bar">
-      <div id="pingFill" class="ping-fill"></div>
-      <div id="pingFlash" class="ping-refresh"></div>
+<main>
+  <!-- System -->
+  <section>
+    <h2>System</h2>
+    <div class="grid">
+      <div class="row"><div class="k">Plattform</div><div id="os" class="v mono"></div></div>
+      <div class="row"><div class="k">Browser</div><div id="browser" class="v mono"></div></div>
+      <div class="row"><div class="k">User-Agent</div><div id="ua" class="v mono"></div></div>
+      <div class="row"><div class="k">Sprache</div><div id="lang" class="v mono"></div></div>
+      <div class="row"><div class="k">Cookies</div><div id="cookies" class="v mono"></div></div>
+      <div class="row"><div class="k">Service Worker</div><div id="sw" class="v mono"></div></div>
+      <div class="row"><div class="k">WebGL</div><div id="webgl" class="v mono"></div></div>
+
+      <div class="viz">
+        <div class="k">CPU-Kerne</div>
+        <div class="v mono" id="cores"></div>
+        <div class="cpu-grid" id="cpuGrid"></div>
+      </div>
+
+      <div class="row"><div class="k">RAM</div><div id="ram" class="v mono"></div></div>
+      <div class="row"><div class="k">Storage</div><div id="storage" class="v mono"></div></div>
+      <div class="row"><div class="k">Battery</div><div id="battery" class="v mono"></div></div>
     </div>
-  </div>
-  <div class="card">
-    <span class="label">Ausrichtung</span>
-    <div class="cube-container">
-      <div class="cube" id="cube">
-        <div class="front"></div>
-        <div class="back"></div>
-        <div class="left"></div>
-        <div class="right"></div>
-        <div class="top"></div>
-        <div class="bottom"></div>
+  </section>
+
+  <!-- Display -->
+  <section>
+    <h2>Display</h2>
+    <div class="grid">
+      <div class="row"><div class="k">Bildschirm</div><div id="screen" class="v mono"></div></div>
+      <div class="row"><div class="k">Viewport</div><div id="viewport" class="v mono"></div></div>
+      <div class="row"><div class="k">Pixel Ratio</div><div id="dpr" class="v mono"></div></div>
+      <div class="row"><div class="k">Farbtiefe</div><div id="depth" class="v mono"></div></div>
+      <div class="viz">
+        <div class="cube-wrap">
+          <div class="k">Ausrichtung</div>
+          <div class="v mono" id="orientVal"></div>
+          <div class="cube-container">
+            <div class="cube" id="cube">
+              <div class="face front"></div><div class="face back"></div>
+              <div class="face left"></div><div class="face right"></div>
+              <div class="face top"></div><div class="face bottom"></div>
+            </div>
+          </div>
+          <button id="btnOrient" style="margin-left:auto;display:none">Aktivieren</button>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <!-- Netzwerk -->
+  <section>
+    <h2>Netzwerk</h2>
+    <div class="grid">
+      <div class="row"><div class="k">Online</div><div id="online" class="v mono"></div></div>
+      <div class="row"><div class="k">Typ</div><div id="netType" class="v mono"></div></div>
+      <div class="row"><div class="k">Downlink</div><div id="downlink" class="v mono"></div></div>
+      <div class="row"><div class="k">RTT</div><div id="rtt" class="v mono"></div></div>
+      <div class="row"><div class="k">IP</div><div id="ip" class="v mono">–</div></div>
+      <div class="viz">
+        <div class="k">Ping</div>
+        <div class="v mono" id="pingText">–</div>
+        <div class="bar" style="margin-top:8px">
+          <div id="pingFill" class="fill"></div>
+          <div id="pingFlash" class="flash"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Optionen (on demand) -->
+  <section>
+    <h2>Optionen</h2>
+    <div class="grid">
+      <div class="controls">
+        <button id="btnGeo">Standort</button>
+        <div id="geo" class="mono"></div>
+      </div>
+      <div class="controls">
+        <button id="btnMedia">Mediengeräte</button>
+        <div id="media" class="mono"></div>
+      </div>
+      <div class="controls">
+        <button id="btnGLInfo">WebGL Vendor/Renderer</button>
+        <button id="btnCanvas">Canvas-Hash</button>
+        <div id="fp" class="mono"></div>
+      </div>
+      <div class="controls">
+        <button id="btnMotion">Bewegungssensoren</button>
+        <div id="motion" class="mono"></div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-// Zeit
-function updateTime() {
-  document.getElementById("time").textContent = new Date().toLocaleTimeString();
+/* Reveal on scroll */
+const reveal = root => {
+  const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }),{threshold:.15});
+  root.querySelectorAll('.row,.viz,.controls').forEach(el=>io.observe(el));
+};
+reveal(document);
+
+/* Time */
+const el = id => document.getElementById(id);
+const startTs = Date.now();
+function pad(n){return n.toString().padStart(2,'0')}
+function tick(){
+  const now = new Date();
+  el('t_local').textContent = now.toLocaleTimeString();
+  el('t_ms').textContent = Date.now().toString();
+  const s = Math.floor((Date.now()-startTs)/1000); const m = Math.floor(s/60);
+  el('t_up').textContent = `${m}m ${pad(s%60)}s`;
+  el('tz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
-setInterval(updateTime, 1000); updateTime();
-document.getElementById("timezone").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+setInterval(tick, 250); tick();
 
-// System Infos
-document.getElementById("os").textContent = navigator.platform;
-document.getElementById("browser").textContent = navigator.userAgent.split(") ").pop();
-document.getElementById("cpu").textContent = navigator.hardwareConcurrency || "?";
-document.getElementById("ram").textContent = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "?";
-document.getElementById("screen").textContent = `${screen.width}x${screen.height}`;
-document.getElementById("viewport").textContent = `${innerWidth}x${innerHeight}`;
+/* System */
+el('os').textContent = navigator.platform || '–';
+el('browser').textContent = (navigator.userAgentData && navigator.userAgentData.brands
+  ? navigator.userAgentData.brands.map(b=>`${b.brand} ${b.version}`).join(', ')
+  : (navigator.userAgent.split(') ').pop() || navigator.userAgent));
+el('ua').textContent = navigator.userAgent;
+el('lang').textContent = navigator.language || '–';
+el('cookies').textContent = navigator.cookieEnabled ? 'Ja' : 'Nein';
+el('sw').textContent = ('serviceWorker' in navigator) ? 'Ja' : 'Nein';
 
-// Netzwerk
-if (navigator.connection) {
-  document.getElementById("netType").textContent = navigator.connection.effectiveType || "-";
-  document.getElementById("rtt").textContent = navigator.connection.rtt + " ms";
-} else {
-  document.getElementById("netType").textContent = "?";
-  document.getElementById("rtt").textContent = "?";
+/* WebGL basic vendor/renderer */
+(function(){
+  try{
+    const c=document.createElement('canvas'); const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+    if(!gl){ el('webgl').textContent='–'; return; }
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const vendor = ext? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer = ext? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    el('webgl').textContent = `${vendor} / ${renderer}`;
+  }catch{ el('webgl').textContent='–'; }
+})();
+
+/* CPU grid */
+const cores = navigator.hardwareConcurrency || 1;
+el('cores').textContent = String(cores);
+const grid = el('cpuGrid');
+for(let i=0;i<cores;i++){ const d=document.createElement('div'); d.className='core'; grid.appendChild(d); }
+setInterval(()=>{ document.querySelectorAll('.core').forEach(c=>c.classList.toggle('active', Math.random()>0.5)); }, 900);
+
+el('ram').textContent = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '–';
+
+/* Storage */
+if(navigator.storage?.estimate){
+  navigator.storage.estimate().then(({quota,usage})=>{
+    const fmt=n=>n?(n/1024/1024).toFixed(1)+' MB':'–';
+    el('storage').textContent = `${fmt(usage)} / ${fmt(quota)}`;
+  }).catch(()=>{el('storage').textContent='–';});
+}else{ el('storage').textContent='–'; }
+
+/* Battery */
+if(navigator.getBattery){
+  navigator.getBattery().then(b=>{
+    const upd=()=>{ el('battery').textContent = `${Math.round(b.level*100)}% ${b.charging?'(Laden)':''}`; };
+    upd(); b.addEventListener('levelchange',upd); b.addEventListener('chargingchange',upd);
+  }).catch(()=> el('battery').textContent='–');
+}else{ el('battery').textContent='–'; }
+
+/* Display */
+function updDisp(){
+  el('screen').textContent = `${screen.width}×${screen.height}`;
+  el('viewport').textContent = `${innerWidth}×${innerHeight}`;
+  el('dpr').textContent = String(devicePixelRatio||1);
+  el('depth').textContent = screen.colorDepth ? `${screen.colorDepth} bit` : '–';
 }
+updDisp(); addEventListener('resize', updDisp);
 
-// IP
-fetch("https://api.ipify.org?format=json")
-  .then(r => r.json())
-  .then(d => document.getElementById("ip").textContent = d.ip)
-  .catch(()=> document.getElementById("ip").textContent = "?");
+/* Orientation + 3D cube */
+function setOrientVal(){
+  const o = (screen.orientation && screen.orientation.type) ? screen.orientation.type
+            : (matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape");
+  el('orientVal').textContent = o;
+}
+setOrientVal();
+if(screen.orientation) screen.orientation.addEventListener('change', setOrientVal);
 
-// Ping mit Animation
-async function measurePing() {
-  let flash = document.getElementById("pingFlash");
-  flash.classList.add("flash");
-  setTimeout(()=>flash.classList.remove("flash"), 600);
+const cube = el('cube');
+function handleOrientation(e){
+  const x = e.beta || 0;  // front/back
+  const y = e.gamma || 0; // left/right
+  cube.style.transform = `rotateX(${-x}deg) rotateY(${y}deg)`;
+}
+(function initOrientation(){
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+    el('btnOrient').style.display='inline-block';
+    el('btnOrient').onclick = async ()=>{
+      try{
+        const res = await DeviceOrientationEvent.requestPermission();
+        if(res==='granted'){ window.addEventListener('deviceorientation', handleOrientation); el('btnOrient').style.display='none'; }
+      }catch{}
+    };
+  }else{
+    window.addEventListener('deviceorientation', handleOrientation);
+  }
+})();
 
-  try {
-    let t1 = performance.now();
-    await fetch("https://www.google.com", {mode:"no-cors"});
-    let t2 = performance.now();
-    let ping = (t2 - t1).toFixed(1);
-    document.getElementById("ping").textContent = ping + " ms";
-    document.getElementById("pingFill").style.width = Math.min(ping,100) + "%";
-    document.getElementById("pingFill").style.background = ping > 100 ? "#f85149" : "#3fb950";
-  } catch {
-    document.getElementById("ping").textContent = "Fehler";
-    document.getElementById("pingFill").style.width = "0%";
+/* Netzwerk */
+function netBasics(){
+  el('online').textContent = navigator.onLine ? 'Online' : 'Offline';
+  if('connection' in navigator){
+    const c = navigator.connection;
+    el('netType').textContent = c.effectiveType || '–';
+    el('downlink').textContent = c.downlink ? `${c.downlink} Mbps` : '–';
+    el('rtt').textContent = c.rtt ? `${c.rtt} ms` : '–';
+    c.addEventListener('change', netBasics);
+  }else{
+    el('netType').textContent='–'; el('downlink').textContent='–'; el('rtt').textContent='–';
   }
 }
-setInterval(measurePing, 8000);
-measurePing();
+netBasics(); addEventListener('online', netBasics); addEventListener('offline', netBasics);
 
-// Device Orientation → Cube drehen
-window.addEventListener("deviceorientation", e => {
-  let cube = document.getElementById("cube");
-  let x = e.beta || 0;  // front-back
-  let y = e.gamma || 0; // left-right
-  cube.style.transform = `rotateX(${-x}deg) rotateY(${y}deg)`;
+/* Public IP */
+fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{ el('ip').textContent=d.ip; }).catch(()=>{ el('ip').textContent='–'; });
+
+/* Ping */
+async function measurePing(){
+  const flash = el('pingFlash'); flash.classList.remove('animate'); void flash.offsetWidth; flash.classList.add('animate');
+  try{
+    const tries=3, ts=[];
+    for(let i=0;i<tries;i++){ const t1=performance.now(); await fetch('https://www.google.com',{cache:'no-store',mode:'no-cors'}); ts.push(performance.now()-t1); }
+    const avg = ts.reduce((a,b)=>a+b,0)/ts.length;
+    el('pingText').textContent = `${avg.toFixed(1)} ms`;
+    const fill = el('pingFill');
+    const pct = Math.min(100, Math.max(5, avg)); // simple map
+    fill.style.width = pct+'%';
+    fill.style.background = avg>200 ? 'var(--err)' : (avg>100 ? 'var(--warn)' : 'var(--ok)');
+  }catch{ el('pingText').textContent='–'; el('pingFill').style.width='0%'; }
+}
+measurePing(); setInterval(measurePing, 10_000);
+
+/* Optionen */
+el('btnGeo')?.addEventListener('click', ()=>{
+  if(!navigator.geolocation){ el('geo').textContent='–'; return; }
+  navigator.geolocation.getCurrentPosition(
+    p=>{ const {latitude,longitude,accuracy}=p.coords; el('geo').textContent=`Lat ${latitude.toFixed(6)}, Lon ${longitude.toFixed(6)} (±${Math.round(accuracy)}m)`; },
+    e=>{ el('geo').textContent='–'; },
+    {enableHighAccuracy:true, timeout:8000, maximumAge:0}
+  );
+});
+
+el('btnMedia')?.addEventListener('click', async ()=>{
+  if(!navigator.mediaDevices?.enumerateDevices){ el('media').textContent='–'; return; }
+  try{
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    el('media').textContent = devs.map(d=>`${d.kind}: ${d.label||'(ohne Label)'} [${d.deviceId.slice(0,8)}…]`).join('\n') || '–';
+  }catch{ el('media').textContent='–'; }
+});
+
+el('btnGLInfo')?.addEventListener('click', ()=>{
+  try{
+    const c=document.createElement('canvas'); const gl=c.getContext('webgl');
+    if(!gl){ el('fp').textContent='–'; return; }
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    const vendor=ext? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer=ext? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    el('fp').textContent=`${vendor} / ${renderer}`;
+  }catch{ el('fp').textContent='–'; }
+});
+
+el('btnCanvas')?.addEventListener('click', ()=>{
+  const c=document.createElement('canvas'); c.width=240; c.height=60; const g=c.getContext('2d');
+  g.textBaseline='top'; g.font='16px "Times New Roman"'; g.fillText('fingerprint-demo-äöüß', 6, 6);
+  const data=c.toDataURL(); let h=0; for(let i=0;i<data.length;i++){ h=(h*31 + data.charCodeAt(i))|0; }
+  el('fp').textContent = 'Canvas ' + ('00000000'+(h>>>0).toString(16)).slice(-8);
+});
+
+el('btnMotion')?.addEventListener('click', async ()=>{
+  const out=el('motion'); function attach(){ let last; window.addEventListener('devicemotion', e=>{ const a=e.accelerationIncludingGravity||e.acceleration; if(!a) return; const now=Date.now(); if(last && now-last<250) return; last=now; out.textContent=`ax=${(a.x||0).toFixed(2)} ay=${(a.y||0).toFixed(2)} az=${(a.z||0).toFixed(2)}`; }); }
+  if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+    try{ const res=await DeviceMotionEvent.requestPermission(); if(res==='granted') attach(); }catch{}
+  }else attach();
 });
 </script>
 </body>
